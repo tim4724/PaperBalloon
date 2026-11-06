@@ -25,15 +25,8 @@
   // split this per store if that ever changes.
   var APP_SIZE_MB = 2;
 
-  // The shared relay is the in-cluster party-sockets pod. ws.hexstacker.com is
-  // NOT that server — it CNAMEs to party-sockets.fly.dev, a separate Fly.io
-  // process with its own room registry, which is why it is declared per game in
-  // games-manifest.json instead of here. Two registries, not one.
-  //
-  // Before public release this host moves to Fly.io as well. That is a registry
-  // switch, not a rename: whatever registers rooms with the in-cluster relay has
-  // to move in the same change, or it will keep writing to the cluster while
-  // this page looks on Fly.
+  // The shared relay. It runs on Fly.io (party-sockets.fly.dev), as does
+  // ws.hexstacker.com, the older hostname declared per game in games-manifest.json.
   var SHARED_RELAYS = ['https://ws.paperballoon.games'];
   // Allow-list for room links — a different question from the relay above: this
   // vets the join URL a relay hands back. Subdomains are matched too, so every
