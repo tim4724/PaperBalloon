@@ -4,11 +4,7 @@
       {
         "appIDs": ["5ZH48MPAM3.games.paperballoon.controller"],
         "components": [
-          { "/": "/??????", "comment": "6-char room code opens the app" },
-          { "/": "/privacy", "comment": "privacy policy opens the app" },
-          { "/": "/imprint", "comment": "imprint opens the app" },
-          { "/": "/en/privacy", "comment": "English privacy opens the app" },
-          { "/": "/en/imprint", "comment": "English imprint opens the app" }
+          { "/": "/??????", "comment": "6-char room code opens the app" }
         ]
       }
     ]
