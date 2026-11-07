@@ -71,8 +71,10 @@ apps show them in-app under their own title bar and hide the page's
   author can watch each one behave. `noindex`, and deliberately not in the
   sitemap. Update it in the same change that alters the contract — it is the only
   executable statement of that spec, and bump the `?v=` on its CSS/JS when you do,
-  or the year-long `immutable` cache hides the change. See "Reaching it from the
-  app" below
+  or the year-long `immutable` cache hides the change. The controller repo's contract
+  UI tests (`ContractTest.kt`, `ContractTests.swift`) drive the deployed page by its
+  element ids and button labels, so renaming one breaks their CI. See "Reaching it
+  from the app" below
 - `beta.html`, `de/beta.html` + `assets/beta.css` — closed-test sign-up steps
   (group, per-app opt-in links, install, 14 days), shared by link. `noindex`, not
   in the sitemap
