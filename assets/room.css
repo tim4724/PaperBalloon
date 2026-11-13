@@ -153,9 +153,6 @@ body {
 .appbtn__text { display: flex; flex-direction: column; line-height: 1.35; }
 .appbtn__title { font-size: 16px; font-weight: 600; }
 .appbtn__sub { font-size: 14px; color: var(--on-surface-variant); }
-/* Store listing not live yet (room.js leaves the href off). */
-.appbtn[aria-disabled="true"] { opacity: 0.55; cursor: default; }
-.appbtn[aria-disabled="true"]:hover { border-color: var(--ghost-line); }
 
 .join__hint { font-size: 15px; color: var(--on-surface-variant); }
 

@@ -17,9 +17,6 @@
 (function () {
   'use strict';
 
-  // ---- Store listings (fill in when the apps go live) ----
-  var IOS_APP_URL = null;      // e.g. 'https://apps.apple.com/app/paper-balloon/id<APPSTORE_ID>'
-  var ANDROID_APP_URL = null;  // 'https://play.google.com/store/apps/details?id=games.paperballoon.controller'
   // Store download size in MB, rounded, shown as "only N MB": a small app is a
   // reason to install it now, so say so. Both apps are the same size today;
   // split this per store if that ever changes.
@@ -54,7 +51,7 @@
       page_not_found: 'Page not found', enter_code: 'Joining a room? Enter the code from your TV.',
       code_length: 'Room codes have 6 characters.', room_code: 'Room code', join: 'Join',
       ways_to_play: 'Ways to play', play_browser: 'Play in browser',
-      ios_app: 'Download iOS app', android_app: 'Download Android app', coming_soon: 'Coming soon', app_size: 'only {mb} MB',
+      ios_app: 'Download iOS app', android_app: 'Download Android app', app_size: 'only {mb} MB',
       privacy: 'Privacy', imprint: 'Imprint', contact: 'Contact', language: 'Language', dark_mode: 'Dark mode'
     },
     de: {
@@ -64,7 +61,7 @@
       page_not_found: 'Seite nicht gefunden', enter_code: 'Du willst einem Raum beitreten? Gib den Code vom Fernseher ein.',
       code_length: 'Raumcodes haben 6 Zeichen.', room_code: 'Raumcode', join: 'Beitreten',
       ways_to_play: 'Mitspielen', play_browser: 'Im Browser spielen',
-      ios_app: 'iOS-App herunterladen', android_app: 'Android-App herunterladen', coming_soon: 'Bald verfügbar', app_size: 'nur {mb} MB',
+      ios_app: 'iOS-App herunterladen', android_app: 'Android-App herunterladen', app_size: 'nur {mb} MB',
       privacy: 'Datenschutz', imprint: 'Impressum', contact: 'Kontakt', language: 'Sprache', dark_mode: 'Dunkles Design'
     },
     fr: {
@@ -74,7 +71,7 @@
       page_not_found: 'Page introuvable', enter_code: 'Tu veux rejoindre une salle ? Saisis le code affiché sur ta télé.',
       code_length: 'Les codes de salle ont 6 caractères.', room_code: 'Code de salle', join: 'Rejoindre',
       ways_to_play: 'Façons de jouer', play_browser: 'Jouer dans le navigateur',
-      ios_app: 'Télécharger l’app iOS', android_app: 'Télécharger l’app Android', coming_soon: 'Bientôt disponible', app_size: 'seulement {mb} Mo',
+      ios_app: 'Télécharger l’app iOS', android_app: 'Télécharger l’app Android', app_size: 'seulement {mb} Mo',
       privacy: 'Confidentialité', imprint: 'Mentions légales', contact: 'Contact', language: 'Langue', dark_mode: 'Mode sombre'
     },
     pt: {
@@ -84,7 +81,7 @@
       page_not_found: 'Página não encontrada', enter_code: 'Quer entrar numa sala? Digita o código da TV.',
       code_length: 'Os códigos de sala têm 6 caracteres.', room_code: 'Código da sala', join: 'Entrar',
       ways_to_play: 'Formas de jogar', play_browser: 'Jogar no navegador',
-      ios_app: 'Baixar o app para iOS', android_app: 'Baixar o app para Android', coming_soon: 'Em breve', app_size: 'só {mb} MB',
+      ios_app: 'Baixar o app para iOS', android_app: 'Baixar o app para Android', app_size: 'só {mb} MB',
       privacy: 'Privacidade', imprint: 'Aviso legal', contact: 'Contato', language: 'Idioma', dark_mode: 'Modo escuro'
     },
     es: {
@@ -94,7 +91,7 @@
       page_not_found: 'Página no encontrada', enter_code: '¿Quieres unirte a una sala? Escribe el código de tu tele.',
       code_length: 'Los códigos de sala tienen 6 caracteres.', room_code: 'Código de sala', join: 'Unirse',
       ways_to_play: 'Formas de jugar', play_browser: 'Jugar en el navegador',
-      ios_app: 'Descargar la app de iOS', android_app: 'Descargar la app de Android', coming_soon: 'Próximamente', app_size: 'solo {mb} MB',
+      ios_app: 'Descargar la app de iOS', android_app: 'Descargar la app de Android', app_size: 'solo {mb} MB',
       privacy: 'Privacidad', imprint: 'Aviso legal', contact: 'Contacto', language: 'Idioma', dark_mode: 'Modo oscuro'
     },
     zh: {
@@ -104,7 +101,7 @@
       page_not_found: '页面未找到', enter_code: '想加入房间？请输入电视上的代码。',
       code_length: '房间代码为 6 个字符。', room_code: '房间代码', join: '加入',
       ways_to_play: '游戏方式', play_browser: '在浏览器中玩',
-      ios_app: '下载 iOS 应用', android_app: '下载 Android 应用', coming_soon: '即将推出', app_size: '仅 {mb} MB',
+      ios_app: '下载 iOS 应用', android_app: '下载 Android 应用', app_size: '仅 {mb} MB',
       privacy: '隐私', imprint: '法律声明', contact: '联系', language: '语言', dark_mode: '深色模式'
     },
     ja: {
@@ -114,7 +111,7 @@
       page_not_found: 'ページが見つからない', enter_code: 'ルームに参加する？テレビのコードを入力してね。',
       code_length: 'ルームコードは6文字だよ。', room_code: 'ルームコード', join: '参加',
       ways_to_play: 'プレイ方法', play_browser: 'ブラウザでプレイ',
-      ios_app: 'iOSアプリをダウンロード', android_app: 'Androidアプリをダウンロード', coming_soon: '近日公開', app_size: 'わずか{mb}MB',
+      ios_app: 'iOSアプリをダウンロード', android_app: 'Androidアプリをダウンロード', app_size: 'わずか{mb}MB',
       privacy: 'プライバシー', imprint: '運営者情報', contact: 'お問い合わせ', language: '言語', dark_mode: 'ダークモード'
     },
     ko: {
@@ -124,7 +121,7 @@
       page_not_found: '페이지를 찾을 수 없어', enter_code: '방에 참가하려면 TV의 코드를 입력해.',
       code_length: '방 코드는 6자리야.', room_code: '방 코드', join: '참가',
       ways_to_play: '플레이 방법', play_browser: '브라우저에서 플레이',
-      ios_app: 'iOS 앱 다운로드', android_app: 'Android 앱 다운로드', coming_soon: '출시 예정', app_size: '단 {mb}MB',
+      ios_app: 'iOS 앱 다운로드', android_app: 'Android 앱 다운로드', app_size: '단 {mb}MB',
       privacy: '개인정보', imprint: '법적 고지', contact: '문의', language: '언어', dark_mode: '다크 모드'
     },
     ru: {
@@ -134,7 +131,7 @@
       page_not_found: 'Страница не найдена', enter_code: 'Хочешь войти в комнату? Введи код с телевизора.',
       code_length: 'Код комнаты состоит из 6 символов.', room_code: 'Код комнаты', join: 'Войти',
       ways_to_play: 'Как играть', play_browser: 'Играть в браузере',
-      ios_app: 'Скачать приложение для iOS', android_app: 'Скачать приложение для Android', coming_soon: 'Скоро', app_size: 'всего {mb} МБ',
+      ios_app: 'Скачать приложение для iOS', android_app: 'Скачать приложение для Android', app_size: 'всего {mb} МБ',
       privacy: 'Конфиденциальность', imprint: 'Выходные данные', contact: 'Контакты', language: 'Язык', dark_mode: 'Тёмная тема'
     },
     it: {
@@ -144,7 +141,7 @@
       page_not_found: 'Pagina non trovata', enter_code: 'Vuoi unirti a una stanza? Inserisci il codice della TV.',
       code_length: 'I codici stanza hanno 6 caratteri.', room_code: 'Codice stanza', join: 'Entra',
       ways_to_play: 'Modi per giocare', play_browser: 'Gioca nel browser',
-      ios_app: 'Scarica l’app iOS', android_app: 'Scarica l’app Android', coming_soon: 'Prossimamente', app_size: 'solo {mb} MB',
+      ios_app: 'Scarica l’app iOS', android_app: 'Scarica l’app Android', app_size: 'solo {mb} MB',
       privacy: 'Privacy', imprint: 'Note legali', contact: 'Contatti', language: 'Lingua', dark_mode: 'Modalità scura'
     },
     tr: {
@@ -154,7 +151,7 @@
       page_not_found: 'Sayfa bulunamadı', enter_code: 'Bir odaya mı katılacaksın? Televizyondaki kodu gir.',
       code_length: 'Oda kodları 6 karakterden oluşur.', room_code: 'Oda kodu', join: 'Katıl',
       ways_to_play: 'Oynama yolları', play_browser: 'Tarayıcıda oyna',
-      ios_app: 'iOS uygulamasını indir', android_app: 'Android uygulamasını indir', coming_soon: 'Yakında', app_size: 'yalnızca {mb} MB',
+      ios_app: 'iOS uygulamasını indir', android_app: 'Android uygulamasını indir', app_size: 'yalnızca {mb} MB',
       privacy: 'Gizlilik', imprint: 'Künye', contact: 'İletişim', language: 'Dil', dark_mode: 'Karanlık mod'
     }
   };
@@ -210,9 +207,7 @@
     meta: document.getElementById('room-meta'),
     game: document.getElementById('room-game'),
     browser: document.getElementById('join-browser'),
-    ios: document.getElementById('app-ios'),
     iosSub: document.getElementById('app-ios-sub'),
-    android: document.getElementById('app-android'),
     androidSub: document.getElementById('app-android-sub'),
     form: document.getElementById('codeform'),
     input: document.getElementById('codeform-input')
@@ -231,19 +226,9 @@
     el.status.className = 'badge' + (mod ? ' badge--' + mod : '');
   }
 
-  function setupStoreButton(a, sub, url, store) {
-    var size = t('app_size', { mb: APP_SIZE_MB });
-    if (url) {
-      a.href = url;
-      sub.textContent = store + ' · ' + size;
-    } else {
-      a.removeAttribute('href');
-      a.setAttribute('aria-disabled', 'true');
-      sub.textContent = t('coming_soon') + ' · ' + size;
-    }
-  }
-  setupStoreButton(el.ios, el.iosSub, IOS_APP_URL, 'App Store');
-  setupStoreButton(el.android, el.androidSub, ANDROID_APP_URL, 'Google Play');
+  var appSize = t('app_size', { mb: APP_SIZE_MB });
+  el.iosSub.textContent = 'App Store · ' + appSize;
+  el.androidSub.textContent = 'Google Play · ' + appSize;
 
   // ---- Parse the link ----
   var m = location.pathname.match(/^\/([1-9A-HJ-NP-Za-km-z]{6})$/);

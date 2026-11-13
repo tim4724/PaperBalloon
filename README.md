@@ -11,12 +11,13 @@ Flagship game: **HexStacker Party** — live at
 [tinytrack.paperballoon.games](https://tinytrack.paperballoon.games);
 **Powder** (skiing) is still in development.
 
-The Android TV builds and the phone controller are in closed testing, gated on
-the [testers Google Group](https://groups.google.com/g/paperballoongames) — a Play
+The phone controller app is on the App Store and Google Play; the room page
+links both. The Android TV builds are in closed testing, gated on the
+[testers Google Group](https://groups.google.com/g/paperballoongames) — a Play
 listing 404s for anyone who isn't a member yet. The landing page deliberately
 says nothing about that: it links only what a visitor can actually open. Testers
 are recruited by link instead, through `/beta` (`/de/beta`); delete those pages
-and `assets/beta.css` once the apps are in production.
+and `assets/beta.css` once the TV apps are in production.
 
 ## Design
 
