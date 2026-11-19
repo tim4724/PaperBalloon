@@ -15,7 +15,7 @@ COPY assets/*.css assets/*.js assets/
 RUN esbuild assets/*.js --minify --target=es5 --outdir=assets --allow-overwrite --log-level=warning \
  && esbuild assets/*.css --minify --outdir=assets --allow-overwrite --log-level=warning
 
-FROM nginxinc/nginx-unprivileged:1.30-alpine
+FROM nginx/nginx-unprivileged:1.30-alpine
 
 # Server block: listens on 8080 (non-root), security headers, /health, no SPA fallback.
 COPY nginx.conf /etc/nginx/conf.d/default.conf

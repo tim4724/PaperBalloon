@@ -108,7 +108,7 @@ docker run --rm -p 8000:8080 \
   -v "$PWD":/usr/share/nginx/html:ro \
   -v "$PWD/nginx.conf":/etc/nginx/conf.d/default.conf:ro \
   -v "$PWD/security-headers.conf":/etc/nginx/snippets/security-headers.conf:ro \
-  nginxinc/nginx-unprivileged:1.27-alpine
+  nginx/nginx-unprivileged:1.30-alpine
 ```
 
 `python3 -m http.server 8000` is enough for the landing page alone; it knows
