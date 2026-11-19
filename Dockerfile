@@ -8,7 +8,7 @@
 # the syntax it is written in, so minifying never raises what a browser or
 # launcher webview must support; CSS has no target, so nothing is rewritten
 # for older browsers either.
-FROM --platform=$BUILDPLATFORM node:24-alpine AS minify
+FROM --platform=$BUILDPLATFORM node:26-alpine AS minify
 RUN npm install --global esbuild@0.28.2
 WORKDIR /site
 COPY assets/*.css assets/*.js assets/
