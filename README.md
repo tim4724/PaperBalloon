@@ -100,7 +100,17 @@ apps show them in-app under their own title bar and hide the page's
   sky tokens)
 - `.htaccess` — the server config on Hetzner Webhosting (Apache + PHP): room
   links, extensionless pages, the 404 page, redirects, cache and security
-  headers (CSP) and the test host's rules. `health.txt` answers `/health`
+  headers (CSP) and the test and MTA-STS hosts' rules. `health.txt` answers
+  `/health`
+- `.well-known/mta-sts.txt` — the MTA-STS policy (RFC 8461), served on
+  `mta-sts.paperballoon.games` (a konsoleH subdomain onto this folder). It tells
+  sending mail servers to deliver to `@paperballoon.games` only over verified
+  TLS to a host matching `mx:`. Enforcing senders cache it for `max_age`, so it
+  must be right *before* the MX changes: before mail ever moves off Hetzner, add
+  the new MX host to `mx:` (or set `mode: none`), wait `max_age`, then switch
+  the MX. Every change to the file needs a new `id` in the
+  `_mta-sts.paperballoon.games` TXT record at Cloudflare, or senders keep the
+  old policy. Failures are reported daily to tlsrpt@ (`_smtp._tls` TXT)
 - `.github/workflows/deploy.yml` — deploys over SFTP on a bare-semver tag, or by
   hand from the Actions tab. The one build step is there: esbuild minifies
   `assets/*.css` and `*.js` in place (JS held to ES5), so the repo, the pages

@@ -1,5 +1,6 @@
 # paperballoon.games on Hetzner Webhosting (Apache 2.4 + PHP). The repo is the
-# document root; test.paperballoon.games serves the same files.
+# document root; test.paperballoon.games and mta-sts.paperballoon.games serve
+# the same files.
 
 RewriteEngine On
 RewriteBase /
@@ -20,6 +21,12 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
 # Never serve dotfiles or dotdirs, except /.well-known/ (app links, ACME).
 RewriteRule (^|/)\.(?!well-known/) - [R=404,L]
+
+# mta-sts.paperballoon.games serves the MTA-STS policy (RFC 8461) and nothing
+# else; README explains when the policy has to change.
+RewriteCond %{ENV:REDIRECT_STATUS} ^$
+RewriteCond %{HTTP_HOST} ^mta-sts\.paperballoon\.games$ [NC]
+RewriteRule !^\.well-known/(mta-sts\.txt|acme-challenge/) - [R=404,L]
 
 # Legacy .html URLs onto the extensionless form. THE_REQUEST is the client's
 # own request line, so the internal rewrites below never trigger these.

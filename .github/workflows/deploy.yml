@@ -90,6 +90,7 @@ jobs:
           check 405 https://paperballoon.games/api/message
           check 200 https://paperballoon.games/.well-known/assetlinks.json
           check 200 https://test.paperballoon.games/health
+          check 200 https://mta-sts.paperballoon.games/.well-known/mta-sts.txt
           if curl -s --max-time 15 https://paperballoon.games/ | cmp -s - "$RUNNER_TEMP/site/index.html"; then
             echo "home page is this build"
           else
