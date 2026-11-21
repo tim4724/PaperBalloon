@@ -69,3 +69,31 @@ jobs:
             echo "- Uploaded to \`${REMOTE_DIR}\` on the Hetzner webhosting"
             echo "- URL: https://paperballoon.games"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # From GitHub's network, never from home: Hetzner blocks web access from
+      # an address that sends many requests in a short time, so few and slow.
+      # The home page has to be this build's, which also catches an upload
+      # that went to a folder the domain doesn't serve.
+      - name: Check the live site
+        run: |
+          set -uo pipefail
+          fail=0
+          check() { # expected status, URL
+            got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$2")
+            echo "$got $2"
+            [ "$got" = "$1" ] || fail=1
+            sleep 2
+          }
+          check 200 https://paperballoon.games/health
+          check 200 https://paperballoon.games/de/
+          check 200 https://paperballoon.games/contact
+          check 405 https://paperballoon.games/api/message
+          check 200 https://paperballoon.games/.well-known/assetlinks.json
+          check 200 https://test.paperballoon.games/health
+          if curl -s --max-time 15 https://paperballoon.games/ | cmp -s - "$RUNNER_TEMP/site/index.html"; then
+            echo "home page is this build"
+          else
+            echo "home page is not this build"
+            fail=1
+          fi
+          exit $fail
