@@ -22,7 +22,9 @@ body {
 
 .legal-shell {
   width: 100%;
-  max-width: 800px;
+  /* 820px of text at full padding: the home page headline's width, and about
+     100 characters a line, the most long text should get. */
+  max-width: 900px;
   /* Only a small baseline top padding here; the rest of the gap above the
      title lives on the h1, so that when the apps hide the h1 most of the gap
      collapses but the content keeps a little breathing room from the top. */
