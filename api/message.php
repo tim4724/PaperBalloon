@@ -61,7 +61,8 @@ http_response_code($status);
 
 function handle(array &$all, array &$bySender, int $now): int
 {
-    // A field people never see: whatever fills it is told it worked.
+    // A field people never see: whatever fills it is told it worked. The
+    // page's script never sends it, since autofill fills hidden fields too.
     if (field('website') !== '') {
         return 204;
     }

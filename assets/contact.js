@@ -16,10 +16,16 @@
     // As the server will see them (it trims both).
     var message = form.elements.message.value.trim();
     var email = form.elements.email.value.trim();
+    // Not the trap field (website): autofill and password managers fill
+    // hidden fields too, and the server drops a filled one without a word.
+    // It still catches bots that post the form without running this.
+    var body = new URLSearchParams();
+    body.append('message', form.elements.message.value);
+    body.append('email', form.elements.email.value);
     button.disabled = true;
     // Handing the mail over takes a second or two on the host.
     say('sending', true);
-    fetch(form.action, { method: 'POST', body: new URLSearchParams(new FormData(form)) })
+    fetch(form.action, { method: 'POST', body: body })
       .then(function (res) {
         if (res.ok) sent(message, email);
         else finish(res.status === 429 ? 'busy' : 'failed');

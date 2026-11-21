@@ -21,7 +21,7 @@
   <link rel="preload" href="/assets/fonts/outfit-latin-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/theme.css?v=36">
   <link rel="stylesheet" href="/assets/site.css?v=23">
-  <link rel="stylesheet" href="/assets/contact.css?v=4">
+  <link rel="stylesheet" href="/assets/contact.css?v=5">
   <script src="/assets/theme.js?v=15"></script>
 </head>
 <body class="bandpage">
@@ -79,14 +79,14 @@
 
     <section class="contact__done" id="contactdone" tabindex="-1" hidden
              aria-labelledby="contactdone-title"
-             data-to="Unsere Antwort geht an"
-             data-none="Du hast keine E-Mail-Adresse angegeben, daher können wir dir nicht antworten.">
-      <h2 id="contactdone-title">Nachricht gesendet</h2>
-      <p id="contactdone-reply"></p>
-      <figure class="contact__copy">
-        <figcaption class="field__label">Deine Nachricht</figcaption>
-        <blockquote id="contactdone-message"></blockquote>
-      </figure>
+             data-to="Wir antworten an"
+             data-none="Ohne E-Mail-Adresse können wir dir nicht antworten.">
+      <div class="contact__card">
+        <div class="contact__balloon" aria-hidden="true"><svg viewBox="20 6 60 86"><use href="#balloon" x="20" y="6" width="60" height="86"/></svg></div>
+        <h2 id="contactdone-title">Nachricht gesendet</h2>
+        <p class="contact__reply" id="contactdone-reply"></p>
+        <blockquote class="contact__copy" id="contactdone-message"></blockquote>
+      </div>
       <button class="btn btn--ghost" type="button" id="contactagain">Noch eine Nachricht schreiben</button>
     </section>
 
@@ -105,6 +105,6 @@
   </footer>
 
   <script src="/assets/lang.js?v=4"></script>
-  <script src="/assets/contact.js?v=4"></script>
+  <script src="/assets/contact.js?v=5"></script>
 </body>
 </html>
