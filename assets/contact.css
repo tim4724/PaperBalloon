@@ -29,7 +29,60 @@
 .contact__send { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
 .contact__send .btn:disabled { opacity: 0.6; cursor: default; }
 .contact__status { font-weight: 600; }
+/* While the message is on its way: quieter than the answer that replaces it. */
+.contact__status--pending { font-weight: 400; color: var(--on-surface-variant); }
+
+/* The confirmation that replaces the form once the message is handed over:
+   one glass card (as the home page's game cards) with the sunset balloon,
+   what was sent and where the reply goes, and the way back to the form. */
+.contact__done { display: grid; gap: 20px; justify-items: start; }
+/* The form and the confirmation set their own display, which beats hidden. */
+.contact [hidden] { display: none; }
+.contact__done:focus { outline: none; }
+.contact__card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 20px;
+  width: 100%;
+  padding: 24px 28px;
+  background: var(--glass);
+  border: 1px solid transparent;
+  border-radius: 20px;
+}
+.contact__balloon { grid-row: span 2; width: 44px; fill: url(#g-sun); }
+.contact__balloon svg { display: block; width: 100%; height: auto; overflow: visible; }
+.contact__card h2 { font-size: 24px; line-height: 1.2; }
+.contact__reply { color: var(--on-surface-variant); }
+.contact__reply strong { color: var(--on-surface); font-weight: 600; }
+/* The visitor's text as typed, line breaks kept; a long one scrolls. */
+.contact__copy {
+  grid-column: 1 / -1;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--glass-line);
+  max-height: 16rem;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 
 .contact__note { margin-top: 32px; font-size: 14px; color: var(--on-surface-variant); }
 .contact__note + .contact__note { margin-top: 6px; }
 .contact__note a { color: var(--on-surface); }
+/* They speak about the form, so they leave with it. */
+.contact:has(.contact__done:not([hidden])) .contact__note { display: none; }
+
+@media (max-width: 560px) {
+  .contact__card { padding: 20px; column-gap: 16px; }
+  .contact__balloon { width: 36px; }
+}
+
+/* Motion (the rules are in home.css): the card settles in and its balloon
+   lifts into place, then floats like the band's. Opacity and transforms of
+   HTML boxes only; the lift moves `translate` and the float (site.css's bob)
+   `transform`, so they add up. Both restart whenever the card is shown. */
+.contact__card { animation: sent-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.contact__balloon { animation: sent-lift 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards, bob 6s ease-in-out infinite alternate; }
+@keyframes sent-in { from { opacity: 0; translate: 0 12px; } }
+@keyframes sent-lift { from { opacity: 0; translate: 0 36px; } 50% { opacity: 1; } }

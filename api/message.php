@@ -61,7 +61,8 @@ http_response_code($status);
 
 function handle(array &$all, array &$bySender, int $now): int
 {
-    // A field people never see: whatever fills it is told it worked.
+    // A field people never see: whatever fills it is told it worked. The
+    // page's script never sends it, since autofill fills hidden fields too.
     if (field('website') !== '') {
         return 204;
     }
@@ -95,6 +96,9 @@ function send(string $text, string $replyTo): bool
     if ($replyTo !== '') {
         $headers['Reply-To'] = $replyTo;
     }
+    // Mail clients hide Reply-To, so the address is under the message too.
+    // Without one, a reply would only reach form@, which is our own inbox.
+    $text .= "\n\n" . ($replyTo !== '' ? 'Antwortadresse: ' . $replyTo : 'Keine Antwortadresse angegeben.');
     // CRLF line breaks, which mail() expects and quoted-printable keeps as
     // line breaks (a bare LF would be encoded as =0A).
     $body = quoted_printable_encode(preg_replace('/\r\n?|\n/', "\r\n", $text));

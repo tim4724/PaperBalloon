@@ -83,7 +83,8 @@ apps show them in-app under their own title bar and hide the page's
   posted to `/api/message`
 - `api/message.php` — the one dynamic part, behind `/api/message`: sends the
   contact form as an email to info@ through the host's own mail system, from
-  form@ (an alias to info@) with the visitor's address as Reply-To. It stores
+  form@ (an alias to info@) with the visitor's address as Reply-To and under
+  the message. It stores
   nothing but the rate limit: hashed sender IPs with the time of each message,
   in `contact-ratelimit.json` in the PHP user's home, outside the document root, entries older than an
   hour dropped on every request. The privacy policy states exactly that;
