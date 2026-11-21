@@ -21,7 +21,7 @@
   <link rel="preload" href="/assets/fonts/outfit-latin-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/theme.css?v=36">
   <link rel="stylesheet" href="/assets/site.css?v=23">
-  <link rel="stylesheet" href="/assets/contact.css?v=2">
+  <link rel="stylesheet" href="/assets/contact.css?v=3">
   <script src="/assets/theme.js?v=15"></script>
 </head>
 <body class="bandpage">
@@ -56,6 +56,7 @@
 
   <main class="wrap contact">
     <form id="contactform" action="/api/message" method="post"
+          data-sending="Sending…"
           data-sent="Thanks, your message is on its way."
           data-busy="That’s a lot of messages at once. Please try again in an hour."
           data-failed="That didn’t work. Please try again in a moment.">
@@ -92,6 +93,6 @@
   </footer>
 
   <script src="/assets/lang.js?v=4"></script>
-  <script src="/assets/contact.js?v=2"></script>
+  <script src="/assets/contact.js?v=3"></script>
 </body>
 </html>

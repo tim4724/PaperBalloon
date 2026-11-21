@@ -29,6 +29,8 @@
 .contact__send { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
 .contact__send .btn:disabled { opacity: 0.6; cursor: default; }
 .contact__status { font-weight: 600; }
+/* While the message is on its way: quieter than the answer that replaces it. */
+.contact__status--pending { font-weight: 400; color: var(--on-surface-variant); }
 
 .contact__note { margin-top: 32px; font-size: 14px; color: var(--on-surface-variant); }
 .contact__note + .contact__note { margin-top: 6px; }
