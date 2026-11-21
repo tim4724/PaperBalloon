@@ -32,6 +32,21 @@
 /* While the message is on its way: quieter than the answer that replaces it. */
 .contact__status--pending { font-weight: 400; color: var(--on-surface-variant); }
 
+/* The confirmation that replaces the form once the message is handed over. */
+.contact__done { display: grid; gap: 16px; justify-items: start; }
+/* The form and the confirmation set their own display, which beats hidden. */
+.contact [hidden] { display: none; }
+.contact__done:focus { outline: none; }
+.contact__done h2 { font-size: 28px; line-height: 1.15; }
+.contact__copy { display: grid; gap: 6px; width: 100%; margin: 8px 0; }
+.contact__copy blockquote {
+  padding: 12px 16px;
+  border-left: 3px solid var(--ghost-line);
+  color: var(--on-surface-variant);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .contact__note { margin-top: 32px; font-size: 14px; color: var(--on-surface-variant); }
 .contact__note + .contact__note { margin-top: 6px; }
 .contact__note a { color: var(--on-surface); }

@@ -21,7 +21,7 @@
   <link rel="preload" href="/assets/fonts/outfit-latin-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/theme.css?v=36">
   <link rel="stylesheet" href="/assets/site.css?v=23">
-  <link rel="stylesheet" href="/assets/contact.css?v=3">
+  <link rel="stylesheet" href="/assets/contact.css?v=4">
   <script src="/assets/theme.js?v=15"></script>
 </head>
 <body class="bandpage">
@@ -57,7 +57,6 @@
   <main class="wrap contact">
     <form id="contactform" action="/api/message" method="post"
           data-sending="Sending…"
-          data-sent="Thanks, your message is on its way."
           data-busy="That’s a lot of messages at once. Please try again in an hour."
           data-failed="That didn’t work. Please try again in a moment.">
       <label class="field">
@@ -78,6 +77,19 @@
       </div>
     </form>
 
+    <section class="contact__done" id="contactdone" tabindex="-1" hidden
+             aria-labelledby="contactdone-title"
+             data-to="Our reply goes to"
+             data-none="You didn’t leave an email address, so we can’t reply.">
+      <h2 id="contactdone-title">Message sent</h2>
+      <p id="contactdone-reply"></p>
+      <figure class="contact__copy">
+        <figcaption class="field__label">Your message</figcaption>
+        <blockquote id="contactdone-message"></blockquote>
+      </figure>
+      <button class="btn btn--ghost" type="button" id="contactagain">Write another message</button>
+    </section>
+
     <p class="contact__note">Your message reaches us by email and isn’t stored on this website. More in the <a href="/en/privacy">privacy policy</a>.</p>
     <p class="contact__note">Or by email: <a href="mailto:info@paperballoon.games">info@paperballoon.games</a></p>
   </main>
@@ -93,6 +105,6 @@
   </footer>
 
   <script src="/assets/lang.js?v=4"></script>
-  <script src="/assets/contact.js?v=3"></script>
+  <script src="/assets/contact.js?v=4"></script>
 </body>
 </html>
