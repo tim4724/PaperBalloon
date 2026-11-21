@@ -1,0 +1,35 @@
+/* Contact page (/contact, /de/contact), a band page (site.css): one form,
+   a message and an optional address, posted to the mailer by contact.js.
+   The send button is the page's one sunset button. */
+
+/* Narrow, but in the title's column: the wrap itself stays full width. */
+.contact > * { max-width: 640px; }
+.contact form { display: grid; gap: 20px; }
+.field { display: grid; gap: 6px; }
+.field__label { font-weight: 600; }
+.field__hint { font-size: 14px; color: var(--on-surface-variant); }
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--ghost-bg);
+  color: var(--on-surface);
+  border: 1.5px solid var(--ghost-line);
+  border-radius: 16px;
+  font: inherit;
+  font-size: 16px; /* 16px or more, or iOS zooms in on focus */
+}
+.field textarea { min-height: 10rem; resize: vertical; line-height: 1.5; }
+.field input:focus,
+.field textarea:focus { outline: none; border-color: var(--on-surface); }
+
+/* The honeypot: off screen rather than display:none, which bots skip. */
+.contact__trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.contact__send { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.contact__send .btn:disabled { opacity: 0.6; cursor: default; }
+.contact__status { font-weight: 600; }
+
+.contact__note { margin-top: 32px; font-size: 14px; color: var(--on-surface-variant); }
+.contact__note + .contact__note { margin-top: 6px; }
+.contact__note a { color: var(--on-surface); }

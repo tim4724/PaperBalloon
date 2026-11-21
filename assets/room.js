@@ -179,10 +179,12 @@
   document.querySelectorAll('[data-i18n-placeholder]').forEach(function (node) {
     node.placeholder = t(node.getAttribute('data-i18n-placeholder'));
   });
-  // The legal pages exist in German (root) and English (/en/) only.
+  // The legal pages exist in German (root) and English (/en/) only, the
+  // contact page in English (root) and German (/de/).
   if (lang === 'de') {
     document.getElementById('link-privacy').href = '/privacy';
     document.getElementById('link-imprint').href = '/imprint';
+    document.getElementById('link-contact').href = '/de/contact';
   }
   // Footer picker for a wrong guess: saves the site-wide choice and re-renders
   // (a reload keeps the room URL and simply redoes the lookup).

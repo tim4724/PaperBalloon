@@ -1,6 +1,7 @@
-/* Shared look of the web pages (home, room, beta): base type, header, glow,
-   buttons and footer. Tokens (--bg, --card, --glow-*, …) come from theme.css,
-   linked first; each page adds its own stylesheet after this one. The legal
+/* Shared look of the web pages (home, room, beta, contact): base type,
+   header, glow, buttons, footer and the band pages' opening. Tokens (--bg,
+   --card, --glow-*, …) come from theme.css, linked first; each page adds its
+   own stylesheet after this one. The legal
    pages are also shown inside the apps and keep their own legal.css.
    The sunset (--action-top/-bottom) fills the one primary button of a page
    only; everything else is ink, muted ink and lines. */
@@ -219,6 +220,49 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 .g-dusk-bottom { stop-color: var(--dusk-bottom); }
 @keyframes bob { from { transform: translateY(8px); } to { transform: translateY(-10px); } }
 @keyframes slide { from { transform: translateX(-24px); } to { transform: translateX(24px); } }
+
+
+/* ---- Band pages (beta, contact): a short page under a short dusk band,
+   lilac to peach and fading into the paper under the title, with two
+   balloons and a cloud: the home page's opening in a lighter dose. The flex
+   column lets main take the slack, so the footer sits on the viewport's
+   bottom edge. ---- */
+.bandpage {
+  display: flex;
+  flex-direction: column;
+  /* The page's top is sky, so the browser bar is too (see home.css). */
+  background: linear-gradient(var(--bg), var(--bg)) var(--sky-high);
+}
+.bandpage main { flex: 1 0 auto; padding-top: 32px; padding-bottom: 72px; }
+.band { background: linear-gradient(var(--sky-high), var(--sky-mid) 30%, var(--sky) 60%, var(--bg)); }
+.band__title {
+  position: relative;
+  max-width: 640px;
+  font-size: 48px;
+  line-height: 1.05;
+  padding: 56px 0 64px;
+}
+/* Right of the title and under the header. Placed in the header's column,
+   not the full-width band, so they keep clear of the language link and the
+   title at any width. */
+.band .wrap { position: relative; }
+.band .balloon--sun { right: 40px; top: 84px; width: 96px; fill: url(#g-sun); }
+.band .balloon--sea { right: 160px; top: 100px; width: 48px; fill: url(#g-sea); }
+.band .cloud--1 { right: 0; top: 176px; width: 150px; }
+/* Too narrow for the balloons beside the title: they move between the
+   header and the title, clear of both. */
+@media (max-width: 800px) {
+  .band__title { padding: 96px 0 40px; }
+  .band .balloon--sun { right: 40px; top: 64px; width: 56px; }
+  .band .balloon--sea { right: 112px; top: 76px; width: 32px; }
+  .band .cloud--1 { right: auto; left: -30px; top: 100px; width: 110px; }
+}
+/* Phones: the balloons nudge in and the title shrinks. */
+@media (max-width: 560px) {
+  .band__title { font-size: 36px; }
+  .band .balloon--sun { right: 12px; }
+  .band .balloon--sea { right: 84px; }
+}
 
 @media (max-width: 560px) {
   .wrap { padding: 0 16px; }

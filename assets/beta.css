@@ -1,36 +1,8 @@
-/* Closed-testing sign-up page (/beta, /de/beta), on site.css: the home page's
-   opening in a lighter dose, a short dusk band behind the header and title
-   with two balloons and a cloud, then the three step cards in the home
-   page's game-card style. One sunset button, the group link, since joining the
-   group is the one thing the page asks for.
+/* Closed-testing sign-up page (/beta, /de/beta), a band page (site.css):
+   the three step cards in the home page's game-card style. One sunset
+   button, the group link, since joining the group is the one thing the page
+   asks for.
    Temporary: delete the page and this file once the apps are in production. */
-
-/* Short page: the flex column lets main take the slack below the cards, so
-   the footer sits on the viewport's bottom edge. */
-body {
-  display: flex;
-  flex-direction: column;
-  /* The page's top is sky, so the browser bar is too (see home.css). */
-  background: linear-gradient(var(--bg), var(--bg)) var(--sky-high);
-}
-.beta { flex: 1 0 auto; padding-top: 32px; padding-bottom: 72px; }
-
-/* ---- The band: lilac to peach, fading into the paper under the title. ---- */
-.betahero { background: linear-gradient(var(--sky-high), var(--sky-mid) 30%, var(--sky) 60%, var(--bg)); }
-.beta__title {
-  position: relative;
-  max-width: 640px;
-  font-size: 48px;
-  line-height: 1.05;
-  padding: 56px 0 64px;
-}
-/* The sunset balloon with one companion and a cloud, right of the title and
-   under the header. Placed in the header's column, not the full-width band,
-   so they keep clear of the language link and the title at any width. */
-.betahero .wrap { position: relative; }
-.balloon--sun { right: 40px; top: 84px; width: 96px; fill: url(#g-sun); }
-.balloon--sea { right: 160px; top: 100px; width: 48px; fill: url(#g-sea); }
-.cloud--1 { right: 0; top: 176px; width: 150px; }
 
 /* ---- Steps: cards stacked full width, in the home page's game-card
    padding and type, but flat: a neutral fill and a plain hairline, not
@@ -107,18 +79,3 @@ body {
 .betaapp .ext { margin-left: auto; color: var(--on-surface-variant); }
 
 .beta__privacy { margin-top: 32px; font-size: 14px; color: var(--on-surface-variant); }
-
-/* Too narrow for the balloons beside the title: they move between the
-   header and the title, clear of both. */
-@media (max-width: 800px) {
-  .beta__title { padding: 96px 0 40px; }
-  .balloon--sun { right: 40px; top: 64px; width: 56px; }
-  .balloon--sea { right: 112px; top: 76px; width: 32px; }
-  .cloud--1 { right: auto; left: -30px; top: 100px; width: 110px; }
-}
-/* Phones: the balloons nudge in and the title shrinks. */
-@media (max-width: 560px) {
-  .beta__title { font-size: 36px; }
-  .balloon--sun { right: 12px; }
-  .balloon--sea { right: 84px; }
-}
