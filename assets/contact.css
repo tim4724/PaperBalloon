@@ -2,9 +2,18 @@
    a message and an optional address, posted to the mailer by contact.js.
    The send button is the page's one sunset button. */
 
-/* Narrow, but in the title's column: the wrap itself stays full width. */
-.contact > * { max-width: 640px; }
-.contact form { display: grid; gap: 20px; }
+/* In the title's column, as wide as the home page's headline: the wrap
+   itself stays full width. */
+.contact > * { max-width: 820px; }
+/* The form is a glass card on the sky, as the confirmation that replaces it. */
+.contact form {
+  display: grid;
+  gap: 20px;
+  padding: 24px 28px;
+  background: var(--glass);
+  border: 1px solid transparent;
+  border-radius: 20px;
+}
 .field { display: grid; gap: 6px; }
 .field__label { font-weight: 600; }
 .field__hint { font-size: 14px; color: var(--on-surface-variant); }
@@ -74,6 +83,7 @@
 .contact:has(.contact__done:not([hidden])) .contact__note { display: none; }
 
 @media (max-width: 560px) {
+  .contact form { padding: 20px; }
   .contact__card { padding: 20px; column-gap: 16px; }
   .contact__balloon { width: 36px; }
 }

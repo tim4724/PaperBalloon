@@ -222,19 +222,22 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 @keyframes slide { from { transform: translateX(-24px); } to { transform: translateX(24px); } }
 
 
-/* ---- Band pages (beta, contact): a short page under a short dusk band,
-   lilac to peach and fading into the paper under the title, with two
-   balloons and a cloud: the home page's opening in a lighter dose. The flex
-   column lets main take the slack, so the footer sits on the viewport's
-   bottom edge. ---- */
+/* ---- Band pages (beta, contact): a short page under a dusk sky, lilac to
+   peach behind the title and the content's first cards, fading into the
+   paper by the bottom of the first screen, with two balloons and a cloud: the
+   home page's opening in a lighter dose. The sky is the page's, not the
+   band's: squeezed into the band alone, it read as a stripe. The flex column
+   lets main take the slack, so the footer sits on the viewport's bottom
+   edge. ---- */
 .bandpage {
   display: flex;
   flex-direction: column;
   /* The page's top is sky, so the browser bar is too (see home.css). */
-  background: linear-gradient(var(--bg), var(--bg)) var(--sky-high);
+  background:
+    linear-gradient(var(--sky-high), var(--sky-mid) 18%, var(--sky) 42%, var(--bg) 82%) top / 100% max(100vh, 720px) no-repeat,
+    linear-gradient(var(--bg), var(--bg)) var(--sky-high);
 }
 .bandpage main { flex: 1 0 auto; padding-top: 32px; padding-bottom: 72px; }
-.band { background: linear-gradient(var(--sky-high), var(--sky-mid) 30%, var(--sky) 60%, var(--bg)); }
 .band__title {
   position: relative;
   max-width: 640px;
@@ -248,7 +251,8 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 .band .wrap { position: relative; }
 .band .balloon--sun { right: 40px; top: 84px; width: 96px; fill: url(#g-sun); }
 .band .balloon--sea { right: 160px; top: 100px; width: 48px; fill: url(#g-sea); }
-.band .cloud--1 { right: 0; top: 176px; width: 150px; }
+/* Inside the band, which clips (.sky): lower, it would lose its bottom. */
+.band .cloud--1 { right: 0; top: 136px; width: 150px; }
 /* Too narrow for the balloons beside the title: they move between the
    header and the title, clear of both. */
 @media (max-width: 800px) {
