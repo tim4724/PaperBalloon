@@ -1,0 +1,98 @@
+# paperballoon.games on Hetzner Webhosting (Apache 2.4 + PHP). The repo is the
+# document root; test.paperballoon.games serves the same files.
+
+RewriteEngine On
+RewriteBase /
+
+# Canonical host, then HTTPS. Only for the real hosts, so a local preview on
+# localhost stays plain HTTP. X-Forwarded-Proto covers a TLS-terminating proxy
+# in front of Apache. ACME HTTP-01 challenges must stay reachable over HTTP.
+# REDIRECT_STATUS is set on the 404 page's internal redirect, which must not
+# turn into a redirect to /room.html.
+RewriteCond %{HTTP_HOST} ^www\.paperballoon\.games$ [NC]
+RewriteRule ^ https://paperballoon.games%{REQUEST_URI} [R=301,L]
+RewriteCond %{ENV:REDIRECT_STATUS} ^$
+RewriteCond %{HTTP_HOST} paperballoon\.games$ [NC]
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# Never serve dotfiles or dotdirs, except /.well-known/ (app links, ACME).
+RewriteRule (^|/)\.(?!well-known/) - [R=404,L]
+
+# Legacy .html URLs onto the extensionless form. THE_REQUEST is the client's
+# own request line, so the internal rewrites below never trigger these.
+RewriteCond %{THE_REQUEST} \s/(privacy|imprint|en/privacy|en/imprint)\.html[\s?]
+RewriteRule ^ /%1 [R=301,L]
+# room.html is only ever served for a room code or as the 404 page; a direct
+# hit has no code for the script to look up, so send it home.
+RewriteCond %{THE_REQUEST} \s/room\.html[\s?]
+RewriteRule ^ / [R=301,L]
+
+# The contact form's endpoint.
+RewriteRule ^api/message$ api/message.php [END]
+
+# Liveness check for monitoring.
+RewriteRule ^health$ health.txt [END]
+
+# The contract test controller, under a room-code-shaped path because the
+# Android App Links filter only claims exactly 6 characters. Test host only:
+# on the apex PBTEST is a room code a real player may draw.
+RewriteCond %{HTTP_HOST} ^test\.paperballoon\.games$ [NC]
+RewriteRule ^PBTEST$ controller-test.html [END]
+
+# Room join links (/<CODE>#<instance>): codes are exactly 6 base58 characters
+# (no 0OIl), so no real page can collide. room.html looks the code up.
+RewriteRule ^[1-9A-HJ-NP-Za-km-z]{6}$ room.html [END]
+
+# Extensionless pages: /privacy serves privacy.html.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+)$ $1.html [END]
+
+DirectoryIndex index.html
+
+# Every 404 renders the room page with its 404 status: a stray path is most
+# often a mistyped room code, so the page offers code entry.
+ErrorDocument 404 /room.html
+
+# Security headers on every response, errors included.
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+Header always set Cross-Origin-Opener-Policy "same-origin"
+# Fully strict CSP: no inline styles or scripts anywhere. connect-src also
+# allows the two relay hosts (Fly.io), so room.html can resolve a code to its
+# game. No upgrade-insecure-requests: it breaks plain-HTTP LAN testing.
+Header always set Content-Security-Policy "default-src 'self'; img-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self' https://ws.paperballoon.games https://ws.hexstacker.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+
+# The test host serves this whole site, which would be duplicate content.
+Header always set X-Robots-Tag "noindex, nofollow" "expr=%{HTTP_HOST} == 'test.paperballoon.games'"
+
+# Caching. HTML (and anything not listed) revalidates on every load, so a
+# deploy shows at once. CSS/JS are ?v=-versioned and artwork/fonts ship under
+# new names, so those are cached for a year.
+Header always set Cache-Control "no-cache"
+<FilesMatch "\.(css|js|webp|woff2)$">
+  Header always set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+<FilesMatch "\.(ico|svg|png|xml|txt)$">
+  Header always set Cache-Control "public, max-age=86400"
+</FilesMatch>
+<FilesMatch "^(apple-app-site-association|assetlinks\.json)$">
+  ForceType application/json
+  Header always set Cache-Control "public, max-age=3600"
+</FilesMatch>
+<Files "health.txt">
+  Header always set Cache-Control "no-store"
+</Files>
+<Files "message.php">
+  Header always set Cache-Control "no-store"
+</Files>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain application/javascript application/json image/svg+xml application/xml image/x-icon
+</IfModule>

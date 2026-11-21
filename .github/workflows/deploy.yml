@@ -1,113 +1,70 @@
 name: Deploy
 
-# Production deploy only — triggered by pushing a bare-semver tag, e.g.:
-#   git tag 1.0.0 && git push origin 1.0.0
-# No dev/preview/branch deploys.
+# Production deploy to Hetzner Webhosting over SFTP. Triggered by pushing a
+# bare-semver tag (git tag 1.0.0 && git push origin 1.0.0), or by hand from the
+# Actions tab, e.g. to put a build on the server before DNS points there.
 on:
   push:
     tags:
       - '[0-9]*'
+  workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
+  # The document root, relative to the SFTP login directory.
+  REMOTE_DIR: public_html
+
+concurrency: deploy
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-
-      # The image name follows github.repository, so it became
-      # ghcr.io/tim4724/paperballoon with the repo rename. The cluster pulls it
-      # anonymously (the Deployment carries no imagePullSecret), so this package
-      # must be public — a newly created GHCR package may start out private.
-      - name: Build and push image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
-
   deploy:
-    runs-on: [self-hosted, k8s]
-    needs: build
+    runs-on: ubuntu-latest
     environment: production
     steps:
-      # Needed for deploy/ — the Deployment manifest is applied, not patched.
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v5
-        with:
-          version: v1.37.1
-
-      - name: Install kustomize
-        uses: imranismail/setup-kustomize@v3
-
-      - name: Write kubeconfig
-        run: |
-          echo "${KUBECONFIG_B64}" | base64 -d > kubeconfig
-          echo "KUBECONFIG=$PWD/kubeconfig" >> "$GITHUB_ENV"
-        env:
-          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
-
-      # Declarative apply, not `kubectl set image`. The imperative form mutated
-      # the live Deployment without touching any manifest, so the cluster drifted
-      # from its declared state and nothing recorded what was actually running.
-      # deploy/ is now the single source of truth for this object.
-      - name: Deploy to production
-        env:
-          TAG: ${{ github.ref_name }}
+      # The site is the repo minus its tooling. esbuild minifies the CSS/JS in
+      # place, same names, so the pages and their ?v= query strings are
+      # untouched and the repo keeps the readable sources. JS is held to ES5,
+      # the syntax it is written in, so minifying never raises what a browser
+      # or launcher webview must support.
+      - name: Build
         run: |
           set -euo pipefail
-          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          IMAGE="ghcr.io/${REPO}:${TAG}"
+          rsync -a --exclude .git --exclude .github --exclude .gitignore \
+            --exclude README.md --exclude tools ./ "$RUNNER_TEMP/site/"
+          cd "$RUNNER_TEMP/site"
+          npx --yes esbuild@0.28.2 assets/*.js --minify --target=es5 --outdir=assets --allow-overwrite --log-level=warning
+          npx --yes esbuild@0.28.2 assets/*.css --minify --outdir=assets --allow-overwrite --log-level=warning
 
-          echo "Deploying ${IMAGE} to production"
-          cd deploy
-          kustomize edit set image "ghcr.io/tim4724/paperballoon=${IMAGE}"
+      - name: Install lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
 
-          echo "--- rendered manifest ---"
-          kustomize build .
-
-          kustomize build . | kubectl apply -f -
-          kubectl rollout status deployment/paperballoon-site \
-            -n paperballoon-site --timeout=120s
-
+      # Two passes: everything but the pages first, then the pages. A visitor
+      # who loads a page mid-upload then never gets one that points at a file
+      # (a new ?v=, a new poster) the server doesn't have yet. Nothing remote is
+      # deleted, so files dropped from the repo stay until removed by hand.
+      - name: Upload
+        # Key login with the server's host key pinned; the key's public half is
+        # registered under konsoleH > Logindaten > Öffentliche SFTP-Schlüssel.
+        env:
+          SFTP_HOST: ${{ secrets.HETZNER_SFTP_HOST }}
+          SFTP_USER: ${{ secrets.HETZNER_SFTP_USER }}
+          SFTP_KEY: ${{ secrets.HETZNER_SFTP_KEY }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.HETZNER_SFTP_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -m 600 /dev/null "$RUNNER_TEMP/sftp_key"
+          printf '%s\n' "$SFTP_KEY" > "$RUNNER_TEMP/sftp_key"
+          printf '%s\n' "$SFTP_KNOWN_HOSTS" > "$RUNNER_TEMP/known_hosts"
+          lftp -u "$SFTP_USER," "sftp://$SFTP_HOST" -e "
+            set sftp:connect-program 'ssh -a -x -i $RUNNER_TEMP/sftp_key -o IdentitiesOnly=yes -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes'
+            set net:max-retries 2
+            mirror --reverse --no-perms --parallel=4 --exclude-glob '*.html' $RUNNER_TEMP/site $REMOTE_DIR
+            mirror --reverse --no-perms --parallel=4 --include-glob '*.html' $RUNNER_TEMP/site $REMOTE_DIR
+            bye"
           {
-            echo "### Production Deploy ${TAG}"
-            echo "- Image: \`${IMAGE}\`"
+            echo "### Production deploy ${GITHUB_REF_NAME}"
+            echo "- Uploaded to \`${REMOTE_DIR}\` on the Hetzner webhosting"
             echo "- URL: https://paperballoon.games"
           } >> "$GITHUB_STEP_SUMMARY"
