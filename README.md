@@ -108,7 +108,12 @@ apps show them in-app under their own title bar and hide the page's
   nobody loads a page that points at a file the server doesn't have yet.
   It logs in with an SSH key (secret `HETZNER_SFTP_KEY`, public half under
   konsoleH › Logindaten › Öffentliche SFTP-Schlüssel) and checks the server
-  against the pinned host key (`HETZNER_SFTP_KNOWN_HOSTS`)
+  against the pinned host key (`HETZNER_SFTP_KNOWN_HOSTS`). Each site on the
+  hosting has its own folder under `public_html`, this one
+  `public_html/paperballoon.games` (konsoleH › Serverkonfiguration ›
+  Startverzeichnis setzen, and the test subdomain's target). Apache applies
+  every `.htaccess` above a site's folder too, so `public_html` itself must
+  never hold one
 
 ## Local preview
 

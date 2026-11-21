@@ -33,7 +33,7 @@ if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 32 * 1024) {
 }
 
 // In the PHP user's home directory: outside the document root and writable on
-// Hetzner (/usr/home/<user>, where the docroot's parent is not) as in the local
+// Hetzner (/usr/home/<user>, apart from every site's folder) as in the local
 // preview (www-data's /var/www).
 $file = @fopen(posix_getpwuid(posix_geteuid())['dir'] . '/contact-ratelimit.json', 'c+');
 if (!$file || !flock($file, LOCK_EX)) {

@@ -10,8 +10,9 @@ on:
   workflow_dispatch:
 
 env:
-  # The document root, relative to the SFTP login directory.
-  REMOTE_DIR: public_html
+  # The document root, relative to the SFTP login directory: the site's own
+  # folder, set as the domain's Startverzeichnis in konsoleH (see README).
+  REMOTE_DIR: public_html/paperballoon.games
 
 concurrency: deploy
 
