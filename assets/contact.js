@@ -25,7 +25,10 @@
     button.disabled = true;
     // Handing the mail over takes a second or two on the host.
     say('sending', true);
-    fetch(form.action, { method: 'POST', body: body })
+    // A request that never answers would leave the button disabled for good.
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    if (ctrl) setTimeout(function () { ctrl.abort(); }, 30000);
+    fetch(form.action, { method: 'POST', body: body, signal: ctrl ? ctrl.signal : undefined })
       .then(function (res) {
         if (res.ok) sent(message, email);
         else finish(res.status === 429 ? 'busy' : 'failed');

@@ -4,7 +4,7 @@
    happens while the "Joining…" cover is still up and the player never sees it.
 
    A SEPARATE FILE, not an inline <script>, on purpose: this origin ships
-   `script-src 'self'` (see security-headers.conf) and so do most game origins,
+   `script-src 'self'` (see .htaccess) and so do most game origins,
    which blocks inline script outright. Same reason the contract tells games to keep
    their contract code in their own bundle.
 

@@ -235,7 +235,7 @@
   // ---- Parse the link ----
   var m = location.pathname.match(/^\/([1-9A-HJ-NP-Za-km-z]{6})$/);
   if (!m) {
-    // Not a room code, so this is the site's 404 (nginx error_page). A short
+    // Not a room code, so this is the site's 404 (.htaccess ErrorDocument). A short
     // alphanumeric path (4 to 8 characters, a near miss) is most likely a
     // mistyped code: prefill it, so a one-character slip is one edit away.
     var guess = (location.pathname.match(/^\/([A-Za-z0-9]{4,8})$/) || [])[1];
