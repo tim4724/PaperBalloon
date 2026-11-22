@@ -28,7 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     exit;
 }
-if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 32 * 1024) {
+// MAX_MESSAGE characters at up to 4 bytes each, each byte URL-encoded to 3,
+// come to 60 KB.
+if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 64 * 1024) {
     http_response_code(400);
     exit;
 }
@@ -103,7 +105,9 @@ function send(string $text, string $replyTo): bool
     // CRLF line breaks, which mail() expects and quoted-printable keeps as
     // line breaks (a bare LF would be encoded as =0A).
     $body = quoted_printable_encode(preg_replace('/\r\n?|\n/', "\r\n", $text));
-    return mail(TO, subject($text), $body, $headers, '-f' . FROM);
+    // Silenced: with display_errors on, a refusal's warning would be output
+    // before the status is set and turn the 502 into a 200.
+    return @mail(TO, subject($text), $body, $headers, '-f' . FROM);
 }
 
 // The subject carries the start of the message, so mail clients don't thread
