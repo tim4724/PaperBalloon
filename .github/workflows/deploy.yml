@@ -28,10 +28,12 @@ jobs:
         uses: actions/checkout@v7
 
       # The site is the repo minus its tooling. esbuild minifies the CSS/JS in
-      # place, same names, so the pages and their ?v= query strings are
-      # untouched and the repo keeps the readable sources. JS is held to ES5,
-      # the syntax it is written in, so minifying never raises what a browser
-      # or launcher webview must support.
+      # place, same names, so the repo keeps the readable sources. JS is held
+      # to ES5, the syntax it is written in, so minifying never raises what a
+      # browser or launcher webview must support. Then every page's link to a
+      # stylesheet or script gets ?v=<hash of the file>: .htaccess caches
+      # those for a year, and a changed file is a new URL. A link the stamp
+      # missed fails the build.
       - name: Build
         run: |
           set -euo pipefail
@@ -46,6 +48,15 @@ jobs:
           cd "$RUNNER_TEMP/site"
           npx --yes esbuild@0.28.2 assets/*.js --minify --target=es5 --outdir=assets --allow-overwrite --log-level=warning
           npx --yes esbuild@0.28.2 assets/*.css --minify --outdir=assets --allow-overwrite --log-level=warning
+          pages=$(find . -name '*.html')
+          for f in assets/*.css assets/*.js; do
+            v=$(sha256sum "$f" | cut -c1-10)
+            sed -i -E "s#\"/$f(\?v=[^\"]*)?\"#\"/$f?v=$v\"#g" $pages
+          done
+          if grep -nE '/assets/[^"?]+\.(css|js)"' $pages; then
+            echo "unstamped stylesheet or script link" >&2
+            exit 1
+          fi
 
       # The endpoints, run for real on PHP's own server before anything is
       # uploaded. It knows no .htaccess, so they are reached as files, and

@@ -82,11 +82,16 @@ Header always set Content-Security-Policy "default-src 'self'; img-src 'self'; s
 Header always set X-Robots-Tag "noindex, nofollow" "expr=%{HTTP_HOST} == 'test.paperballoon.games'"
 
 # Caching. HTML (and anything not listed) revalidates on every load, so a
-# deploy shows at once. CSS/JS are ?v=-versioned and artwork/fonts ship under
-# new names, so those are cached for a year.
+# deploy shows at once. Artwork and fonts ship under new names, so those are
+# cached for a year; CSS/JS only when asked for by version. The deploy stamps
+# each page's links with ?v=<hash of the file>; the repo's pages link them
+# bare, so a local preview always shows the file as it is.
 Header always set Cache-Control "no-cache"
-<FilesMatch "\.(css|js|webp|woff2)$">
+<FilesMatch "\.(webp|woff2)$">
   Header always set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+<FilesMatch "\.(css|js)$">
+  Header always set Cache-Control "public, max-age=31536000, immutable" "expr=%{QUERY_STRING} =~ /^v=/"
 </FilesMatch>
 <FilesMatch "\.(ico|svg|png|xml|txt)$">
   Header always set Cache-Control "public, max-age=86400"
