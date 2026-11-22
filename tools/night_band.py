@@ -8,7 +8,7 @@ until they arrive.
 
 Colours come from the dark block in assets/theme.css; the stops below must
 match the --night-stops and --night-tile sizes in assets/home.css. Re-run after
-changing either, and since .webp is cached for a month without revalidating,
+changing either, and since .webp is cached for a year without revalidating,
 bump VERSION (it names the files) and point home.css at the new names.
 
     python3 tools/night_band.py      # needs cwebp (brew install webp)

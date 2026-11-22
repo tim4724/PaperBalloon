@@ -27,16 +27,9 @@
   --chip: #F8ECE6;
 
   /* series (dataviz reference palette, light steps; validated on #ffffff) */
-  --s1: #2a78d6;            /* blue: direct link, players, tilt, "great", "too easy" */
-  --s1-soft: #86b6ef;       /* blue, lighter step: direct through the router */
+  --s1: #2a78d6;            /* blue: direct link, players, tilt */
   --s2: #eb6834;            /* orange: relay, buttons */
-  --s3: #1baf7a;            /* aqua: mixed steering */
-  --mid: #DAD4CC;           /* diverging midpoint: "okay", "just right" */
-  --hot: #e34948;           /* diverging warm pole: "awkward", "too hard" */
-  --critical: #d03b3b;      /* status: the direct link failed */
-  --na: #BDB6AE;            /* not supported */
-  --bot: #9A93A0;           /* bots, as grey as they are in the game */
-  --f1: #86b6ef; --f2: #5598e7; --f3: #2a78d6; --f4: #1c5cab; --f5: #104281;  /* fun 1..5 */
+  --na: #BDB6AE;            /* not supported, a bot's win */
   --good: #0ca30c; --good-soft: #8fd68f; --warn: #fab219; --bad: #d03b3b; --bad-soft: #eea0a0;  /* status: good, watch, bad */
   --on-dark: #FFFFFF;
   --on-light: #2A2030;
@@ -47,7 +40,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0C0A12; --panel: #17131E; --ink: #F1EAF4; --ink-2: #BCB1C5; --muted: #8E8496; --line: #2A2333; --grid: #221C2A; --focus: #A493FF; --chip: #221C2A;
-    --s1: #3987e5; --s1-soft: #184f95; --s2: #d95926; --s3: #199e70; --mid: #4A4452; --hot: #e66767; --critical: #d03b3b; --na: #5B5563; --bot: #77707E;
+    --s1: #3987e5; --s2: #d95926; --na: #5B5563;
     --good-soft: #0b5f0b; --bad-soft: #7d2626;
     --on-light: #F1EAF4;
     color-scheme: dark;
@@ -55,7 +48,7 @@
 }
 :root[data-theme="dark"] {
   --bg: #0C0A12; --panel: #17131E; --ink: #F1EAF4; --ink-2: #BCB1C5; --muted: #8E8496; --line: #2A2333; --grid: #221C2A; --focus: #A493FF; --chip: #221C2A;
-  --s1: #3987e5; --s1-soft: #184f95; --s2: #d95926; --s3: #199e70; --mid: #4A4452; --hot: #e66767; --critical: #d03b3b; --na: #5B5563; --bot: #77707E;
+  --s1: #3987e5; --s2: #d95926; --na: #5B5563;
   --good-soft: #0b5f0b; --bad-soft: #7d2626;
   --on-light: #F1EAF4;
   color-scheme: dark;
@@ -100,7 +93,7 @@ h1 { margin: 0; font-weight: 600; font-size: clamp(28px, 3.6vw, 38px); line-heig
 /* tiles */
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
 .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 2px; align-content: start; }
-.tile__label { font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.tile__label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ink-2); }
 .tile__value { font-size: 32px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
 .tile__value small { font-size: 16px; font-weight: 500; color: var(--ink-2); }
 .tile__sub { font-size: 13px; color: var(--muted); }
@@ -116,7 +109,6 @@ h1 { margin: 0; font-weight: 600; font-size: clamp(28px, 3.6vw, 38px); line-heig
 .note b { color: var(--ink-2); font-weight: 600; }
 button.tile { font: inherit; color: inherit; text-align: left; cursor: pointer; }
 button.tile:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
-.tile__label { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .more-d summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-2); }
 .more-d__body { display: grid; gap: 12px; margin-top: 12px; }
 

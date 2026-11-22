@@ -71,6 +71,8 @@
   --sky-high: #E6DAF2;
   --sky: #FFE0CC;
   --sky-mid: color-mix(in srgb, var(--sky-high), var(--sky));
+  /* What only the day shows (clouds, the toggle's moon) and only the night
+     (stars, the toggle's sun). */
   --cloud-display: block;
   --star-display: none;
   /* Cards, outlined (ghost) controls, status tags, home TV */

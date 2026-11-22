@@ -75,18 +75,12 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 .icon-btn:hover { color: var(--on-surface); background: var(--ghost-bg); }
 .icon-btn svg { width: 18px; height: 18px; }
 
-/* Shows the scheme it switches TO: moon in light mode, sun in dark. The
-   visibility rules mirror theme.css's forced/system split; keep in sync. */
+/* Shows the scheme it switches TO: moon in light mode, sun in dark, on
+   theme.css's day and night tokens. */
 .theme-toggle { margin-right: -8px; /* glyph, not tap area, on the content edge */ }
 .theme-toggle svg { width: 19px; height: 19px; }
-.theme-toggle__sun { display: none; }
-.theme-toggle__moon { display: block; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .theme-toggle__sun { display: block; }
-  :root:not([data-theme="light"]) .theme-toggle__moon { display: none; }
-}
-:root[data-theme="dark"] .theme-toggle__sun { display: block; }
-:root[data-theme="dark"] .theme-toggle__moon { display: none; }
+.theme-toggle__sun { display: var(--star-display); }
+.theme-toggle__moon { display: var(--cloud-display); }
 
 /* The theme switch's sunset (theme.js decides when it runs): the new scheme
    spreads from the toggle in a soft-edged circle, from --vt-x/-y to --vt-r,
