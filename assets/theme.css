@@ -20,13 +20,12 @@
      instead of clouds. The controller app's home screen runs the
      same stops over a shorter height.
    - --glass / --glass-line: the home page's panels and cards and the
-     room page's empty poster card. --glass is a padding-box fill plus
-     a border-box rim gradient, so a border using it must be
-     transparent; --glass-line is their inner dividers.
+     contact page's. --glass is a padding-box fill plus a border-box
+     rim gradient, so a border using it must be transparent;
+     --glass-line is their inner dividers.
    No shadows or glows on buttons, cards or the TV; depth is a
-   hairline. (Two exceptions, both light from art, never a
-   control: the room page's blurred-poster glow and the faint
-   poster-coloured light that follows the mouse over a home
+   hairline. (One exception, light from art, never a control: the
+   faint poster-coloured light that follows the mouse over a home
    game card.)
    Follows the system light/dark setting; dark is near-black by
    design, not a grey: a hint of the night sky's violet in the
@@ -74,7 +73,7 @@
   --sky-mid: color-mix(in srgb, var(--sky-high), var(--sky));
   --cloud-display: block;
   --star-display: none;
-  /* Cards, outlined (ghost) controls, status tags, poster glow, home TV */
+  /* Cards, outlined (ghost) controls, status tags, home TV */
   --card: #FFFFFF;
   --glass: linear-gradient(#FFFFFF, color-mix(in srgb, #FFFFFF 55%, var(--bg))) padding-box,
     linear-gradient(#FFFFFF, #EEDDD3 30%, #D9C3B7) border-box;
@@ -83,8 +82,6 @@
   --ghost-line: #DCC7BE;
   --tag-beta-bg: #FCE3CC;
   --tag-beta-ink: #7A3E00;
-  --glow-filter: blur(80px) saturate(1.4);
-  --glow-opacity: 0.3;
   --tv-body: #1C1620;
   --tv-edge: rgba(255, 255, 255, 0.06);
 }
@@ -121,8 +118,6 @@
     --ghost-line: rgba(255, 255, 255, 0.18);
     --tag-beta-bg: rgba(255, 193, 77, 0.14);
     --tag-beta-ink: #FFC14D;
-    --glow-filter: blur(70px) saturate(1.5) brightness(0.42);
-    --glow-opacity: 1;
     --tv-body: transparent;
     --tv-edge: transparent;
   }
@@ -154,8 +149,6 @@
   --ghost-line: rgba(255, 255, 255, 0.18);
   --tag-beta-bg: rgba(255, 193, 77, 0.14);
   --tag-beta-ink: #FFC14D;
-  --glow-filter: blur(70px) saturate(1.5) brightness(0.42);
-  --glow-opacity: 1;
   --tv-body: transparent;
   --tv-edge: transparent;
 }

@@ -1,6 +1,6 @@
 // Light/dark override for the Paper Balloon site. Shared by every page so a choice
-// made on one follows the visitor everywhere; the home, room and beta pages
-// carry the .theme-toggle button. No stored choice = follow the system setting
+// made on one follows the visitor everywhere; the pages with a header carry
+// the .theme-toggle button. No stored choice = follow the system setting
 // (theme.css handles that via prefers-color-scheme alone). Also keeps the
 // browser bar colour in step with the page (theme-color, overscroll).
 // Loaded synchronously in <head> so the override lands before first paint.

@@ -9,7 +9,7 @@ RewriteBase /
 # localhost stays plain HTTP. X-Forwarded-Proto covers a TLS-terminating proxy
 # in front of Apache. ACME HTTP-01 challenges must stay reachable over HTTP.
 # REDIRECT_STATUS is set on the 404 page's internal redirect, which must not
-# turn into a redirect to /room.html.
+# turn into a redirect to /404.html.
 RewriteCond %{HTTP_HOST} ^www\.paperballoon\.games$ [NC]
 RewriteRule ^ https://paperballoon.games%{REQUEST_URI} [R=301,L]
 RewriteCond %{ENV:REDIRECT_STATUS} ^$
@@ -32,10 +32,6 @@ RewriteRule !^\.well-known/(mta-sts\.txt|acme-challenge/) - [R=404,L]
 # own request line, so the internal rewrites below never trigger these.
 RewriteCond %{THE_REQUEST} \s/(privacy|imprint|en/privacy|en/imprint)\.html[\s?]
 RewriteRule ^ /%1 [R=301,L]
-# room.html is only ever served for a room code or as the 404 page; a direct
-# hit has no code for the script to look up, so send it home.
-RewriteCond %{THE_REQUEST} \s/room\.html[\s?]
-RewriteRule ^ / [R=301,L]
 
 # The contact form's endpoint.
 RewriteRule ^api/message$ api/message.php [END]
@@ -53,10 +49,6 @@ RewriteRule ^health$ health.txt [END]
 RewriteCond %{HTTP_HOST} ^test\.paperballoon\.games$ [NC]
 RewriteRule ^PBTEST$ controller-test.html [END]
 
-# Room join links (/<CODE>#<instance>): codes are exactly 6 base58 characters
-# (no 0OIl), so no real page can collide. room.html looks the code up.
-RewriteRule ^[1-9A-HJ-NP-Za-km-z]{6}$ room.html [END]
-
 # Extensionless pages: /privacy serves privacy.html.
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}.html -f
@@ -64,9 +56,11 @@ RewriteRule ^(.+)$ $1.html [END]
 
 DirectoryIndex index.html
 
-# Every 404 renders the room page with its 404 status: a stray path is most
-# often a mistyped room code, so the page offers code entry.
-ErrorDocument 404 /room.html
+# The 404 page, in German for paths under /de/.
+ErrorDocument 404 /404.html
+<If "%{REQUEST_URI} =~ m#^/de/#">
+  ErrorDocument 404 /de/404.html
+</If>
 
 # Security headers on every response, errors included.
 Header always set X-Content-Type-Options "nosniff"
@@ -75,10 +69,9 @@ Header always set Referrer-Policy "strict-origin-when-cross-origin"
 Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 Header always set Cross-Origin-Opener-Policy "same-origin"
-# Fully strict CSP: no inline styles or scripts anywhere. connect-src also
-# allows the two relay hosts (Fly.io), so room.html can resolve a code to its
-# game. No upgrade-insecure-requests: it breaks plain-HTTP LAN testing.
-Header always set Content-Security-Policy "default-src 'self'; img-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self' https://ws.paperballoon.games https://ws.hexstacker.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+# Fully strict CSP: no inline styles or scripts anywhere. No
+# upgrade-insecure-requests: it breaks plain-HTTP LAN testing.
+Header always set Content-Security-Policy "default-src 'self'; img-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
 
 # The test host serves this whole site, which would be duplicate content.
 Header always set X-Robots-Tag "noindex, nofollow" "expr=%{HTTP_HOST} == 'test.paperballoon.games'"

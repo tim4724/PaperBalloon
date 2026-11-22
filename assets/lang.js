@@ -1,34 +1,33 @@
 // Language preference + German-suggestion banner for the Paper Balloon site.
-// Shared by every page: the landing (index.html carries #langbar; /de/ does not),
-// the legal pages (/privacy, /imprint and their /en/ counterparts) and the room
-// page. The blocks below each no-op on pages missing the elements they target,
-// so one file covers all of them.
+// Shared by the pages that come in both languages: the landing (index.html
+// carries #langbar; /de/ does not), contact, beta and the legal pages
+// (/privacy, /imprint and their /en/ counterparts). The blocks below each
+// no-op on pages missing the elements they target, so one file covers all of
+// them.
 //
-// One saved choice for the whole site: picking a language on any page (landing
-// link, legal toggle, room-page picker) is what the others honor next.
+// One saved choice for the whole site: picking a language on any page is what
+// the banner honors next.
 (function () {
   var STORE = 'cg-lang';
   var choice;
   try { choice = localStorage.getItem(STORE); } catch (e) { choice = null; }
 
-  // The visitor's language among `supported`: the saved choice if it is one of
-  // them, else the first of them in the browser's ranked list, else null.
-  // Pages that have one URL per language only suggest with this; pages with a
-  // single URL (the room page) render in it.
-  function preferred(supported) {
-    if (choice && supported.indexOf(choice) !== -1) return choice;
-    var prefs = navigator.languages || [navigator.language || ''];
-    for (var i = 0; i < prefs.length; i++) {
-      var code = prefs[i].slice(0, 2).toLowerCase();
-      if (supported.indexOf(code) !== -1) return code;
-    }
-    return null;
-  }
   function save(code) {
     choice = code;
     try { localStorage.setItem(STORE, code); } catch (e) {}
   }
-  window.cgLang = { preferred: preferred, save: save };
+
+  // Whether German wins: the saved choice, else whichever of German and
+  // English the browser ranks first.
+  function prefersGerman() {
+    if (choice === 'de' || choice === 'en') return choice === 'de';
+    var prefs = navigator.languages || [navigator.language || ''];
+    for (var i = 0; i < prefs.length; i++) {
+      var code = prefs[i].slice(0, 2).toLowerCase();
+      if (code === 'de' || code === 'en') return code === 'de';
+    }
+    return false;
+  }
 
   document.addEventListener('click', function (ev) {
     // Remember the language whenever a switch/banner link is clicked. A saved
@@ -47,12 +46,10 @@
     }
   });
 
-  // Below only applies to a page carrying the banner (the EN root). Show it
-  // when German wins: a saved "de", or nothing saved (or a language this page
-  // lacks) and the browser ranks German above English. Never redirect: every
-  // URL keeps its language.
+  // Below only applies to a page carrying the banner (the EN root). Never
+  // redirect: every URL keeps its language.
   var bar = document.getElementById('langbar');
-  if (!bar || preferred(['en', 'de']) !== 'de') return;
+  if (!bar || !prefersGerman()) return;
 
   bar.hidden = false;
   bar.querySelector('.langbar__dismiss').addEventListener('click', function () {

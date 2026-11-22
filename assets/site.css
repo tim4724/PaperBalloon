@@ -1,6 +1,6 @@
-/* Shared look of the web pages (home, room, beta, contact): base type,
-   header, glow, buttons, footer and the band pages' opening. Tokens (--bg,
-   --card, --glow-*, …) come from theme.css, linked first; each page adds its
+/* Shared look of the web pages (home, beta, contact, 404): base type,
+   header, buttons, footer and the band pages' opening. Tokens (--bg,
+   --card, …) come from theme.css, linked first; each page adds its
    own stylesheet after this one. The legal
    pages are also shown inside the apps and keep their own legal.css.
    The sunset (--action-top/-bottom) fills the one primary button of a page
@@ -30,28 +30,6 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 40px;
-}
-
-/* ---- Glow: a game poster again, blurred far past recognition, behind the
-   top of a page (faint in light). Oversized so the blur's soft edge falls
-   outside the box; a fade at the bottom hands over to plain --bg. ---- */
-.glow { position: relative; isolation: isolate; overflow: hidden; }
-.glow__img {
-  position: absolute;
-  top: -10%; left: -10%;
-  width: 120%; height: 120%;
-  object-fit: cover;
-  filter: var(--glow-filter);
-  opacity: var(--glow-opacity);
-  z-index: -2;
-}
-.glow::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 45%;
-  background: linear-gradient(to bottom, transparent, var(--bg));
-  z-index: -1;
 }
 
 /* ---- Header: no bar, a hairline under it ---- */
@@ -190,8 +168,8 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 .footer--slim .footer__row { align-items: center; gap: 12px 32px; }
 .footer--slim .footer__links { padding-top: 0; }
 
-/* ---- Sky parts, shared by the pages that open under the dusk (home, beta;
-   room takes only the bare band):
+/* ---- Sky parts, shared by the pages that open under the dusk (home, beta,
+   contact; 404 takes only the bare band):
    a .sky band with no header hairline, stars at night, flat white clouds by
    day, and the fleet's balloons. A page carries the symbols (the launcher
    icon's balloon, a cloud, the star field) and the four gradients in a
