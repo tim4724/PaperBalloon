@@ -28,10 +28,15 @@ RewriteCond %{ENV:REDIRECT_STATUS} ^$
 RewriteCond %{HTTP_HOST} ^mta-sts\.paperballoon\.games$ [NC]
 RewriteRule !^\.well-known/(mta-sts\.txt|acme-challenge/) - [R=404,L]
 
-# Legacy .html URLs onto the extensionless form. THE_REQUEST is the client's
-# own request line, so the internal rewrites below never trigger these.
-RewriteCond %{THE_REQUEST} \s/(privacy|imprint|en/privacy|en/imprint)\.html[\s?]
+# .html URLs onto the extensionless form, an index.html onto its folder, so
+# every page has one address. THE_REQUEST is the client's own request line, so
+# the internal rewrites below never trigger these.
+RewriteCond %{THE_REQUEST} \s/([^?\s]*/)?index\.html[\s?]
 RewriteRule ^ /%1 [R=301,L]
+RewriteCond %{THE_REQUEST} \s/([^?\s]+)\.html[\s?]
+RewriteRule ^ /%1 [R=301,L]
+# English is the root; /de/ makes /en/ an easy guess, and it has no index.
+RewriteRule ^en/?$ / [R=301,L]
 
 # The contact form's endpoint.
 RewriteRule ^api/message$ api/message.php [END]
