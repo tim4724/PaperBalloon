@@ -9,6 +9,9 @@ on:
       - '[0-9]*'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   # The document root, relative to the SFTP login directory: the site's own
   # folder, set as the domain's Startverzeichnis in konsoleH (see README).
@@ -41,10 +44,17 @@ jobs:
       - name: Install lftp
         run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
 
-      # Two passes: everything but the pages first, then the pages. A visitor
-      # who loads a page mid-upload then never gets one that points at a file
-      # (a new ?v=, a new poster) the server doesn't have yet. Nothing remote is
-      # deleted, so files dropped from the repo stay until removed by hand.
+      # Every file goes up under a temporary name and is renamed over the old
+      # one, so a request sees the old or the new file, never a half-written
+      # one (which the year-long cache on CSS/JS would keep). Passes in order,
+      # stopping at the first failure: everything but the pages first, then
+      # the pages. A visitor who loads a page mid-upload then never gets one
+      # that points at a file (a new ?v=, a new poster) the server doesn't have
+      # yet. A minute later, whatever the repo no longer has is deleted, so a
+      # removed page or endpoint doesn't stay live; the minute lets a page
+      # loaded just before the switch still fetch its files. That last pass
+      # copies nothing (--only-missing skips every file that exists) and
+      # spares the ACME challenges, which belong to Hetzner's cert renewal.
       - name: Upload
         # Key login with the server's host key pinned; the key's public half is
         # registered under konsoleH > Logindaten > Öffentliche SFTP-Schlüssel.
@@ -61,8 +71,12 @@ jobs:
           lftp -u "$SFTP_USER," "sftp://$SFTP_HOST" -e "
             set sftp:connect-program 'ssh -a -x -i $RUNNER_TEMP/sftp_key -o IdentitiesOnly=yes -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes'
             set net:max-retries 2
+            set cmd:fail-exit yes
+            set xfer:use-temp-file yes
             mirror --reverse --no-perms --parallel=4 --exclude-glob '*.html' $RUNNER_TEMP/site $REMOTE_DIR
             mirror --reverse --no-perms --parallel=4 --include-glob '*.html' $RUNNER_TEMP/site $REMOTE_DIR
+            sleep 60
+            mirror --reverse --no-perms --only-missing --delete --exclude-glob .well-known/acme-challenge/ $RUNNER_TEMP/site $REMOTE_DIR
             bye"
           {
             echo "### Production deploy ${GITHUB_REF_NAME}"

@@ -137,8 +137,10 @@ apps show them in-app under their own title bar and hide the page's
 - `.github/workflows/deploy.yml` — deploys over SFTP on a bare-semver tag, or by
   hand from the Actions tab. The one build step is there: esbuild minifies
   `assets/*.css` and `*.js` in place (JS held to ES5), so the repo, the pages
-  and the local preview keep the readable sources. The pages go up last, so
-  nobody loads a page that points at a file the server doesn't have yet. A
+  and the local preview keep the readable sources. Each file is renamed into
+  place, so no request gets half of one. The pages go up last, so nobody loads
+  a page that points at a file the server doesn't have yet. What the repo no
+  longer has is deleted from the server. A
   last step checks the live site from GitHub's network: test it from there,
   not from home, as Hetzner blocks an address that sends many requests.
   It logs in with an SSH key (secret `HETZNER_SFTP_KEY`, public half under
