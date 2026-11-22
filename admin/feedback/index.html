@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Feedback Desk · Paper Balloon</title>
+  <!-- The owner's page: behind a login, in no sitemap, linked from nowhere. -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.svg?v=6" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico?v=6" sizes="16x16 32x32 48x48">
+  <link rel="preload" href="/assets/fonts/outfit-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/feedback-desk.css?v=1">
+  <script src="/assets/theme.js?v=15"></script>
+  <!-- The shell, then one view per game: see the top of feedback-desk.js. -->
+  <script src="/assets/feedback-desk.js?v=4" defer></script>
+  <script src="/assets/feedback-desk-tinytrack.js?v=2" defer></script>
+</head>
+<body>
+
+<div class="desk">
+  <header class="head">
+    <div class="head__text">
+      <p class="eyebrow">paperballoon.games/admin/feedback</p>
+      <h1>Feedback Desk</h1>
+      <p class="lede" id="short-count"></p>
+    </div>
+    <button type="button" class="signout" id="signout" hidden>Sign out</button>
+  </header>
+
+  <p class="status" id="status" role="status">Loading the feedback.</p>
+  <form class="login" id="login" method="post" action="/api/feedback-data" hidden>
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <button type="submit">Sign in</button>
+  </form>
+
+  <main class="desk__main" id="main" hidden>
+    <!-- Parts marked data-game belong to that game's view and show only with it. -->
+    <div class="filters" role="toolbar" aria-label="Filters">
+      <div class="filter" id="game-filter" hidden><span class="filter__label" id="f-game">Game</span>
+        <div class="segs" role="group" aria-labelledby="f-game" data-filter="game" id="game-segs"></div>
+      </div>
+      <div class="filter"><span class="filter__label" id="f-period">Period</span>
+        <div class="segs" role="group" aria-labelledby="f-period" data-filter="period">
+          <button type="button" data-v="7">7 days</button><button type="button" data-v="30">30 days</button><button type="button" data-v="all">All</button>
+        </div>
+      </div>
+      <div class="filter" data-game="tinytrack"><span class="filter__label" id="f-cup">Cup</span>
+        <div class="segs" role="group" aria-labelledby="f-cup" data-filter="cup" id="cup-segs"></div>
+      </div>
+      <div class="filter" data-game="tinytrack"><span class="filter__label" id="f-tv">TV</span>
+        <div class="segs" role="group" aria-labelledby="f-tv" data-filter="tv">
+          <button type="button" data-v="all">All</button><button type="button" data-v="web">Browser</button><button type="button" data-v="tvos">Apple TV</button><button type="button" data-v="androidtv">Android TV</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="tiles" id="short" aria-label="In short"></section>
+
+    <div class="grid2">
+      <section class="panel" id="p-fun">
+        <div class="panel__head"><h2>Did they have fun?</h2></div>
+        <div class="rows" id="ratings"></div>
+        <div class="legend" id="ratings-legend"></div>
+      </section>
+      <section class="panel" id="p-bots" data-game="tinytrack">
+        <div class="panel__head"><h2>Are the bots too easy or too hard?</h2></div>
+        <div class="rows" id="bots"></div>
+        <div class="legend" id="bots-legend"></div>
+      </section>
+    </div>
+
+    <div class="grid2" data-game="tinytrack">
+      <section class="panel" id="p-pvb">
+        <div class="panel__head"><h2>Who wins the races?</h2></div>
+        <div class="rows" id="pvb"></div>
+        <div class="legend" id="pvb-legend"></div>
+        <details class="more-d"><summary>By car</summary><div class="more-d__body">
+          <div class="rows" id="cars"></div>
+        </div></details>
+      </section>
+      <section class="panel" id="p-steer">
+        <div class="panel__head"><h2>Tilt or buttons?</h2></div>
+        <p class="sub">What they steer with</p>
+        <div class="rows" id="steer"></div>
+        <div class="legend" id="steer-legend"></div>
+        <p class="sub">How it felt</p>
+        <div class="rows" id="controls"></div>
+        <div class="legend" id="controls-legend"></div>
+        <details class="more-d"><summary>Tilt on iPhone and Android</summary><div class="more-d__body">
+          <div class="rows" id="controls-os"></div>
+        </div></details>
+      </section>
+    </div>
+
+    <div class="grid2" data-game="tinytrack">
+      <section class="panel" id="p-fl">
+        <div class="panel__head"><h2>Did the direct link work?</h2></div>
+        <div class="rows" id="fl-phone"></div>
+        <div class="legend" id="fl-legend"></div>
+        <details class="more-d"><summary>By TV, and how stable it was</summary><div class="more-d__body">
+          <div class="rows" id="fl-tv"></div>
+          <div class="facts" id="fl-facts"></div>
+        </div></details>
+      </section>
+      <section class="panel" id="p-delay">
+        <div class="panel__head"><h2>Did steering feel laggy?</h2></div>
+        <div class="rows" id="delay-bands"></div>
+        <div class="legend" id="delay-legend"></div>
+        <details class="more-d"><summary>Exact delays</summary><div class="more-d__body">
+          <div class="hists" id="hists"></div>
+          <p class="note" id="delay-note"></p>
+        </div></details>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="panel__head"><h2>What did they write?</h2></div>
+      <div class="comments__bar">
+        <div class="segs" role="group" aria-label="Which answers" id="ctabs">
+          <button type="button" data-v="disliked">What bugged them</button><button type="button" data-v="liked">What they liked</button>
+        </div>
+        <input class="search" id="search" type="search" placeholder="Search comments" aria-label="Search comments">
+      </div>
+      <ul class="clist" id="clist"></ul>
+      <button type="button" class="more" id="more" hidden>Show more</button>
+    </section>
+  </main>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+</body>
+</html>

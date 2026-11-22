@@ -81,7 +81,7 @@ apps show them in-app under their own title bar and hide the page's
   in the sitemap
 - `contact.html`, `de/contact.html` + `assets/contact.{css,js}` — contact form,
   posted to `/api/message`
-- `api/message.php` — the one dynamic part, behind `/api/message`: sends the
+- `api/message.php` — behind `/api/message`: sends the
   contact form as an email to info@ through the host's own mail system, from
   form@ (an alias to info@) with the visitor's address as Reply-To and under
   the message. It stores
@@ -89,6 +89,28 @@ apps show them in-app under their own title bar and hide the page's
   in `contact-ratelimit.json` in the PHP user's home, outside the document root, entries older than an
   hour dropped on every request. The privacy policy states exactly that;
   change the two together
+- `api/feedback.php` — behind `/api/feedback`: the feedback service all games
+  share, since the games themselves are static. A game's phone controller posts
+  its feedback form here from its own origin, and each submission is appended
+  to `feedback/<game>-YYYY-MM.jsonl` in the PHP user's home. The file's header
+  says exactly what is stored, and the privacy policy quotes it. A game joins
+  with one row in `GAMES` (its name and the origins it posts from) and by
+  sending the envelope `record()` checks: its build, `session` (the same
+  value from every phone of one couch, derived from the play, so couches can
+  be counted), the fun rating, its own questions in `answers`, the two free
+  texts. Whatever else it wants kept goes
+  in `data`, which the service holds to a form (numbers, yes/no, short words)
+  without knowing its fields; what a game puts there belongs in the privacy
+  policy
+- `admin/feedback/` + `assets/feedback-desk.{css,js}`, `api/feedback-data.php` —
+  the owner's charts over that feedback, behind a password. One-time setup on
+  the server: the password's hash goes into `feedback/admin.hash` (the PHP
+  file's header has the command); until then the page says it is not set up.
+  `noindex`, not in the sitemap. `feedback-desk.js` is the shell: every game
+  gets the game switch, the fun rating and the comments from it. What only one
+  game can chart is a view, `assets/feedback-desk-<game>.js` plus its markup in
+  the page (`feedback-desk-tinytrack.js` is the one there is); the shell's
+  header says what a view is made of
 - `privacy.html`, `imprint.html` — legal pages (German, umbrella policy for all
   Paper Balloon infra); English versions in `en/`
 - `assets/` — CSS (tokens in `theme.css`, shared page parts in `site.css`, one
@@ -142,8 +164,9 @@ docker run --rm -p 8000:80 -v "$PWD":/var/www/html:ro php:8.5-apache sh -c '
   exec apache2-foreground'
 ```
 
-The contact form answers 500 there: www-data can't write the rate-limit file
-to its home (`/var/www`, owned by root) and there is no mail system. To try it, add
+The contact form and `/api/feedback` answer 500 there: www-data can't write
+to its home (`/var/www`, owned by root), which `chown www-data /var/www` in the
+container fixes, and there is no mail system. To try the form, add
 [Mailpit](https://mailpit.axllent.org) and hand PHP's mail to it with msmtp;
 Mailpit's inbox is on :8001:
 
