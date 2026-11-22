@@ -16,7 +16,7 @@
 //   service does not know what is in it and only holds its form: numbers,
 //   yes/no and short words of a fixed alphabet (TOKEN), so no free text and
 //   no markup can ride in it. What each game puts there is the game's to
-//   decide and is listed per game in the privacy policy.
+//   decide; the privacy policy names the kinds of data, not each field.
 // Every field is rebuilt by record(): nothing the request carries beyond it
 // reaches the file, and neither does the IP address, the user agent or a time
 // finer than the day. A month's file is deleted once it is KEEP_MONTHS old:
@@ -26,8 +26,8 @@
 // The only other state is the rate limit, as for the contact form: a hash of
 // each sender's IP address (sender() below) with the time of each submission, in
 // feedback-ratelimit.json beside the folder, entries older than an hour
-// dropped on every request. The privacy policy states exactly all of this;
-// change the two together.
+// dropped on every request. The privacy policy states all of this; change the
+// two together.
 //
 // Answers 204 once the line is written (or, from a preview host, once it has
 // passed the checks: those are not kept), 400 for a submission it won't keep,

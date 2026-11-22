@@ -93,7 +93,8 @@ apps show them in-app under their own title bar and hide the page's
   share, since the games themselves are static. A game's phone controller posts
   its feedback form here from its own origin, and each submission is appended
   to `feedback/<game>-YYYY-MM.jsonl` in the PHP user's home. The file's header
-  says exactly what is stored, and the privacy policy quotes it. A game joins
+  says exactly what is stored, and the privacy policy names the kinds of data.
+  A game joins
   with one row in `GAMES` (its name, the origin it posts from and its preview
   hosts, whose submissions are checked but not stored) and by
   sending the envelope `record()` checks: its build, `session` (the same
