@@ -24,10 +24,10 @@
 // so a game nobody sends from any more does not keep its files.
 //
 // The only other state is the rate limit, as for the contact form: a hash of
-// each sender's IP address (sender() below) with the time of each submission, in
-// feedback-ratelimit.json beside the folder, entries older than an hour
-// dropped on every request. The privacy policy states all of this; change the
-// two together.
+// each sender's IP address (sender() in lib.php) with the time of each
+// submission, in feedback-ratelimit.json beside the folder, entries older
+// than an hour dropped on every request. The privacy policy states all of
+// this; change the two together.
 //
 // Answers 204 once the line is written (or, from a preview host, once it has
 // passed the checks: those are not kept), 400 for a submission it won't keep,
@@ -45,16 +45,16 @@ const GAMES = [
 
 const MAX_BODY = 8 * 1024;          // bytes
 const MAX_FILE = 50 * 1024 * 1024;  // bytes per monthly file
-const KEEP_MONTHS = 24;             // monthly files kept, this month included: the policy's promise, and all feedback-data.php reads
 const PER_SENDER = 20;              // submissions per sender per window: the phones of one couch behind one router, each asked once per cup
 const PER_SERVER = 600;             // submissions per window in total, all games together
-const WINDOW = 3600;                // seconds
 
 // The one kind of string `answers` and `data` may hold.
 const TOKEN = '/^[A-Za-z0-9 :._#()+-]{0,40}$/D';
 const MAX_ANSWERS = 12;
 const MAX_DEPTH = 6;                // objects and lists inside one another, `data` itself included
 const MAX_VALUES = 600;             // everything in `data`, each object and list counted too
+
+require __DIR__ . '/lib.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Allow: POST');
@@ -152,13 +152,7 @@ function store(array $record, string $dir, array &$all, array &$bySender, int $n
         error_log('feedback: cannot write ' . $path);
         return 500;
     }
-    // Every game's files from before the oldest kept month go.
-    $oldest = gmdate('Y-m', strtotime('first day of -' . (KEEP_MONTHS - 1) . ' months', $now));
-    foreach (glob($dir . '/*.jsonl') ?: [] as $kept) {
-        if (preg_match('/-(\d{4}-\d{2})\.jsonl$/', $kept, $month) && strcmp($month[1], $oldest) < 0) {
-            @unlink($kept);
-        }
-    }
+    drop_old_feedback($dir);
     return 204;
 }
 
@@ -267,23 +261,4 @@ function text($value, int $max): string
     $value = trim(preg_replace('/[\p{Cc}\x{202A}-\x{202E}\x{2066}-\x{2069}]+/u', '', $value));
     need(mb_strlen($value, 'UTF-8') <= $max);
     return $value;
-}
-
-// Who the rate limit counts as one sender: the hash of the IP address, or of
-// an IPv6 address's first 64 bits, since one connection holds that whole block
-// and could otherwise send from a new address every time.
-function sender(): string
-{
-    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-    $bytes = @inet_pton($ip);
-    if ($bytes !== false && strlen($bytes) === 16) {
-        $ip = bin2hex(substr($bytes, 0, 8));
-    }
-    return hash('sha256', $ip);
-}
-
-// The timestamps still inside the window.
-function recent($times, int $now): array
-{
-    return is_array($times) ? array_values(array_filter($times, fn($t) => is_int($t) && $t > $now - WINDOW)) : [];
 }

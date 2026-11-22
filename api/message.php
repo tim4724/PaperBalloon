@@ -14,13 +14,14 @@
 // for each.
 
 const MAX_MESSAGE = 5000; // characters
-const PER_SENDER = 5;     // messages per sender (sender() below) per window
+const PER_SENDER = 5;     // messages per sender (sender() in lib.php) per window
 const PER_SERVER = 30;    // messages per window in total, against spam from many addresses
-const WINDOW = 3600;      // seconds
 const TO = 'info@paperballoon.games';
 // Sender and bounce address: an alias to info@. Never the visitor's address,
 // which would fail SPF/DMARC; theirs goes into Reply-To.
 const FROM = 'form@paperballoon.games';
+
+require __DIR__ . '/lib.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Allow: POST');
@@ -120,23 +121,4 @@ function field(string $name): string
 {
     $value = $_POST[$name] ?? '';
     return is_string($value) ? $value : '';
-}
-
-// Who the rate limit counts as one sender: the hash of the IP address, or of
-// an IPv6 address's first 64 bits, since one connection holds that whole block
-// and could otherwise send from a new address every time.
-function sender(): string
-{
-    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-    $bytes = @inet_pton($ip);
-    if ($bytes !== false && strlen($bytes) === 16) {
-        $ip = bin2hex(substr($bytes, 0, 8));
-    }
-    return hash('sha256', $ip);
-}
-
-// The timestamps still inside the window.
-function recent($times, int $now): array
-{
-    return is_array($times) ? array_values(array_filter($times, fn($t) => is_int($t) && $t > $now - WINDOW)) : [];
 }

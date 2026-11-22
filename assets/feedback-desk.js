@@ -54,7 +54,7 @@
 
   function load() {
     say('Loading the feedback.');
-    fetch('/api/feedback-data?months=24').then(function (res) {
+    fetch('/api/feedback-data').then(function (res) {
       if (res.status === 401) { signedIn(false); say(''); $('password').focus(); return; }
       if (res.status === 503) { say('No password has been set up on the server yet. The top of api/feedback-data.php says how.'); return; }
       if (!res.ok) { say('The feedback could not be loaded (error ' + res.status + ').'); return; }

@@ -13,16 +13,15 @@
 //                    an hour from one sender (hashed, in
 //                    feedback/login-ratelimit.json, as feedback.php keeps its own)
 // POST logout=1      204, the session is gone
-// GET ?months=N      every game's records of the last N months (1 to
-//                    KEEP_MONTHS, default 3) as one JSON array, oldest month
-//                    first; each names its `game`, and the page tells them
-//                    apart. 401 unless logged in
+// GET                every game's kept records as one JSON array; each names
+//                    its `game`, and the page tells them apart. 401 unless
+//                    logged in
 // Nothing here may be cached: .htaccess sends no-store for this file.
 
-const TRIES = 10;            // logins per sender per window
-const WINDOW = 3600;         // seconds
-const KEEP_MONTHS = 24;      // feedback.php's: the monthly files kept, this month included
+const TRIES = 10;            // logins per sender (sender() in lib.php) per window
 const SESSION = 12 * 3600;   // seconds a login lasts without a request
+
+require __DIR__ . '/lib.php';
 
 $dir = posix_getpwuid(posix_geteuid())['dir'] . '/feedback';
 $hash = trim((string) @file_get_contents($dir . '/admin.hash'));
@@ -64,47 +63,33 @@ if (!resume($dir)) {
     http_response_code(401);
     exit;
 }
-$months = filter_var($_GET['months'] ?? 3, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => KEEP_MONTHS]]);
-if ($months === false) {
-    http_response_code(400);
-    exit;
-}
 // Lets the page's other requests through while this one streams.
 session_write_close();
 
 // The stored lines are JSON already, so they go out as they are, joined into
 // an array: the whole set is never held in memory.
 header('Content-Type: application/json');
-$first = new DateTimeImmutable('first day of this month', new DateTimeZone('UTC'));
-// feedback.php drops the months past KEEP_MONTHS when a submission arrives. A
-// game nobody sends from any more would keep its files, so the desk drops
-// them too.
-$oldest = $first->modify('-' . (KEEP_MONTHS - 1) . ' month')->format('Y-m');
-foreach (glob($dir . '/*.jsonl') ?: [] as $kept) {
-    if (preg_match('/-(\d{4}-\d{2})\.jsonl$/', $kept, $month) && strcmp($month[1], $oldest) < 0) {
-        @unlink($kept);
-    }
-}
+// feedback.php drops the months past KEEP_MONTHS when a submission arrives. If
+// nobody sends any more the files would stay, so the desk drops them too.
+drop_old_feedback($dir);
 $comma = '';
 echo '[';
-for ($back = $months - 1; $back >= 0; $back--) {
-    foreach (glob($dir . '/*-' . $first->modify("-$back month")->format('Y-m') . '.jsonl') ?: [] as $path) {
-        $file = @fopen($path, 'r');
-        if (!$file) {
-            continue;
-        }
-        // feedback.php appends under an exclusive lock: never half a line.
-        flock($file, LOCK_SH);
-        while (($line = fgets($file)) !== false) {
-            // A line cut short (a full disk, say) is left out: it would make
-            // the whole array unreadable.
-            if (($line = rtrim($line)) !== '' && json_decode($line) !== null) {
-                echo $comma, $line;
-                $comma = ',';
-            }
-        }
-        fclose($file);
+foreach (glob($dir . '/*.jsonl') ?: [] as $path) {
+    $file = @fopen($path, 'r');
+    if (!$file) {
+        continue;
     }
+    // feedback.php appends under an exclusive lock: never half a line.
+    flock($file, LOCK_SH);
+    while (($line = fgets($file)) !== false) {
+        // A line cut short (a full disk, say) is left out: it would make
+        // the whole array unreadable.
+        if (($line = rtrim($line)) !== '' && json_decode($line) !== null) {
+            echo $comma, $line;
+            $comma = ',';
+        }
+    }
+    fclose($file);
 }
 echo ']';
 
@@ -153,9 +138,6 @@ function resume(string $dir): bool
 }
 
 // Counts this login try against the sender's ten per hour; false once over.
-// A sender is an IP address, or an IPv6 address's first 64 bits: one
-// connection holds that whole block and could otherwise guess from a new
-// address every time.
 function allowed(string $path): bool
 {
     $file = @fopen($path, 'c+');
@@ -166,16 +148,11 @@ function allowed(string $path): bool
     $now = time();
     $by = [];
     foreach (json_decode(stream_get_contents($file), true) ?: [] as $sender => $times) {
-        if ($times = array_values(array_filter((array) $times, fn($t) => is_int($t) && $t > $now - WINDOW))) {
+        if ($times = recent($times, $now)) {
             $by[$sender] = $times;
         }
     }
-    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-    $bytes = @inet_pton($ip);
-    if ($bytes !== false && strlen($bytes) === 16) {
-        $ip = bin2hex(substr($bytes, 0, 8));
-    }
-    $sender = hash('sha256', $ip);
+    $sender = sender();
     $ok = count($by[$sender] ?? []) < TRIES;
     if ($ok) {
         $by[$sender][] = $now;
