@@ -10,16 +10,19 @@
 // Until that file exists every request answers 503.
 //
 // POST password=...  204 and a session cookie, or 401; 429 after ten tries in
-//                    an hour from one IP address (hashed, in
+//                    an hour from one sender (hashed, in
 //                    feedback/login-ratelimit.json, as feedback.php keeps its own)
 // POST logout=1      204, the session is gone
-// GET ?months=N      every game's records of the last N months (1-24, default
-//                    3) as one JSON array, oldest month first; each names its
-//                    `game`, and the page tells them apart. 401 unless logged in
+// GET ?months=N      every game's records of the last N months (1 to
+//                    KEEP_MONTHS, default 3) as one JSON array, oldest month
+//                    first; each names its `game`, and the page tells them
+//                    apart. 401 unless logged in
 // Nothing here may be cached: .htaccess sends no-store for this file.
 
-const TRIES = 10;     // logins per IP address per window
-const WINDOW = 3600;  // seconds
+const TRIES = 10;            // logins per sender per window
+const WINDOW = 3600;         // seconds
+const KEEP_MONTHS = 24;      // feedback.php's: the monthly files kept, this month included
+const SESSION = 12 * 3600;   // seconds a login lasts without a request
 
 $dir = posix_getpwuid(posix_geteuid())['dir'] . '/feedback';
 $hash = trim((string) @file_get_contents($dir . '/admin.hash'));
@@ -57,11 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
     exit;
 }
-if (!resume($dir) || empty($_SESSION['owner'])) {
+if (!resume($dir)) {
     http_response_code(401);
     exit;
 }
-$months = filter_var($_GET['months'] ?? 3, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 24]]);
+$months = filter_var($_GET['months'] ?? 3, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => KEEP_MONTHS]]);
 if ($months === false) {
     http_response_code(400);
     exit;
@@ -73,6 +76,15 @@ session_write_close();
 // an array: the whole set is never held in memory.
 header('Content-Type: application/json');
 $first = new DateTimeImmutable('first day of this month', new DateTimeZone('UTC'));
+// feedback.php drops the months past KEEP_MONTHS when a submission arrives. A
+// game nobody sends from any more would keep its files, so the desk drops
+// them too.
+$oldest = $first->modify('-' . (KEEP_MONTHS - 1) . ' month')->format('Y-m');
+foreach (glob($dir . '/*.jsonl') ?: [] as $kept) {
+    if (preg_match('/-(\d{4}-\d{2})\.jsonl$/', $kept, $month) && strcmp($month[1], $oldest) < 0) {
+        @unlink($kept);
+    }
+}
 $comma = '';
 echo '[';
 for ($back = $months - 1; $back >= 0; $back--) {
@@ -84,7 +96,9 @@ for ($back = $months - 1; $back >= 0; $back--) {
         // feedback.php appends under an exclusive lock: never half a line.
         flock($file, LOCK_SH);
         while (($line = fgets($file)) !== false) {
-            if (($line = rtrim($line)) !== '') {
+            // A line cut short (a full disk, say) is left out: it would make
+            // the whole array unreadable.
+            if (($line = rtrim($line)) !== '' && json_decode($line) !== null) {
                 echo $comma, $line;
                 $comma = ',';
             }
@@ -103,6 +117,12 @@ function session(string $dir): void
     }
     session_save_path($dir . '/sessions');
     ini_set('session.use_strict_mode', '1');
+    // How long a login lasts and when its file goes are set here, not left to
+    // the host's php.ini: a session unused for SESSION seconds is removed by
+    // one in twenty of the requests that start one.
+    ini_set('session.gc_maxlifetime', (string) SESSION);
+    ini_set('session.gc_probability', '1');
+    ini_set('session.gc_divisor', '20');
     // PHP's own cache headers would double the one .htaccess sends.
     session_cache_limiter('');
     session_set_cookie_params([
@@ -115,18 +135,27 @@ function session(string $dir): void
     session_start();
 }
 
-// Picks up the session a request's cookie names. Without a cookie there is
-// none to pick up, and starting one would leave a file per stray request.
+// Picks up the owner's session, if the request's cookie names one. Without a
+// cookie there is none to pick up, and starting one would leave a file per
+// stray request; so would a cookie that names no login, which strict mode
+// answers with a fresh, empty session, so that one is removed again.
 function resume(string $dir): bool
 {
     if (!isset($_COOKIE[session_name()])) {
         return false;
     }
     session($dir);
+    if (empty($_SESSION['owner'])) {
+        session_destroy();
+        return false;
+    }
     return true;
 }
 
 // Counts this login try against the sender's ten per hour; false once over.
+// A sender is an IP address, or an IPv6 address's first 64 bits: one
+// connection holds that whole block and could otherwise guess from a new
+// address every time.
 function allowed(string $path): bool
 {
     $file = @fopen($path, 'c+');
@@ -141,7 +170,12 @@ function allowed(string $path): bool
             $by[$sender] = $times;
         }
     }
-    $sender = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '');
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $bytes = @inet_pton($ip);
+    if ($bytes !== false && strlen($bytes) === 16) {
+        $ip = bin2hex(substr($bytes, 0, 8));
+    }
+    $sender = hash('sha256', $ip);
     $ok = count($by[$sender] ?? []) < TRIES;
     if ($ok) {
         $by[$sender][] = $now;

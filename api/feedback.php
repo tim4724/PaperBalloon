@@ -19,29 +19,34 @@
 //   decide and is listed per game in the privacy policy.
 // Every field is rebuilt by record(): nothing the request carries beyond it
 // reaches the file, and neither does the IP address, the user agent or a time
-// finer than the day. A month's file is deleted once it is KEEP_MONTHS old.
+// finer than the day. A month's file is deleted once it is KEEP_MONTHS old:
+// here with each submission, and by feedback-data.php whenever the desk loads,
+// so a game nobody sends from any more does not keep its files.
 //
 // The only other state is the rate limit, as for the contact form: a hash of
-// each sender's IP address with the time of each submission, in
+// each sender's IP address (sender() below) with the time of each submission, in
 // feedback-ratelimit.json beside the folder, entries older than an hour
 // dropped on every request. The privacy policy states exactly all of this;
 // change the two together.
 //
-// Answers 204 once the line is written, 400 for a submission it won't keep,
+// Answers 204 once the line is written (or, from a preview host, once it has
+// passed the checks: those are not kept), 400 for a submission it won't keep,
 // 403 for a page that may not post here, 405 for anything but POST, 429 over
 // the rate limit, 507 when the month's file is full and 500 when a file can't
 // be used. Bodies are empty: the controller has its own words for each.
 
-// One row per game: the origins its controller posts from (live and branch
-// previews). A new game needs nothing else here.
+// One row per game: the origin its controller posts from, and the pattern of
+// its preview hosts (main and branch builds). A preview's form works like the
+// real one, but what it sends is test data and is not stored. A new game
+// needs nothing else here.
 const GAMES = [
-    'tinytrack' => '/^https:\/\/tinytrack(-[a-z0-9-]+)?\.paperballoon\.games$/D',
+    'tinytrack' => ['https://tinytrack.paperballoon.games', '/^https:\/\/tinytrack-[a-z0-9-]+\.paperballoon\.games$/D'],
 ];
 
 const MAX_BODY = 8 * 1024;          // bytes
 const MAX_FILE = 50 * 1024 * 1024;  // bytes per monthly file
 const KEEP_MONTHS = 24;             // monthly files kept, this month included: the policy's promise, and all feedback-data.php reads
-const PER_SENDER = 6;               // submissions per IP address per window: a full couch behind one router
+const PER_SENDER = 20;              // submissions per sender per window: the phones of one couch behind one router, each asked once per cup
 const PER_SERVER = 600;             // submissions per window in total, all games together
 const WINDOW = 3600;                // seconds
 
@@ -71,14 +76,19 @@ if (!$in instanceof stdClass || !is_string($game) || !isset(GAMES[$game])) {
 
 // The game is on another origin. The controller sends text/plain, a "simple"
 // request with no preflight, so this header only decides whether its script
-// may see the answer. Only the named game's own hosts may post; a local
-// preview of this site takes any origin, so a game's dev server can be tried
-// against it. Requests without an Origin are not from a browser, and the rate
-// limit is what holds those.
+// may see the answer. Only the named game's own hosts may post. The one
+// exception is this site served on localhost or a private address (the local
+// preview), which takes any origin, so a game's dev server can be tried
+// against it; under every other name the rule holds, whatever host the server
+// is reached by. Requests without an Origin are not from a browser, and the
+// rate limit is what holds those.
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$preview = false;
 if ($origin !== '') {
-    $live = preg_match('/(^|\.)paperballoon\.games(:\d+)?$/i', $_SERVER['HTTP_HOST'] ?? '');
-    if ($live && !preg_match(GAMES[$game], $origin)) {
+    [$own, $previews] = GAMES[$game];
+    $local = preg_match('/^(localhost|\[::1\]|(127|10|192\.168|172\.(1[6-9]|2\d|3[01]))(\.\d+)+)(:\d+)?$/', $_SERVER['HTTP_HOST'] ?? '');
+    $preview = !$local && preg_match($previews, $origin);
+    if (!$local && !$preview && $origin !== $own) {
         http_response_code(403);
         exit;
     }
@@ -89,6 +99,10 @@ try {
     $record = record($in, $game);
 } catch (InvalidArgumentException $e) {
     http_response_code(400);
+    exit;
+}
+if ($preview) {
+    http_response_code(204);
     exit;
 }
 
@@ -122,7 +136,7 @@ http_response_code($status);
 // can't race another submission.
 function store(array $record, string $dir, array &$all, array &$bySender, int $now): int
 {
-    $sender = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '');
+    $sender = sender();
     if (count($all) >= PER_SERVER || count($bySender[$sender] ?? []) >= PER_SENDER) {
         return 429;
     }
@@ -243,14 +257,29 @@ function whole($value, int $min, int $max): int
 }
 
 // Free text on one line: line breaks and tabs become a space, other control
-// characters go. Empty when there is nothing left.
+// characters go, and so do the marks that override text direction, which
+// could make a comment read as something else on the desk. Empty when there
+// is nothing left.
 function text($value, int $max): string
 {
     need(is_string($value) && mb_check_encoding($value, 'UTF-8'));
     $value = preg_replace('/[\r\n\t\x{2028}\x{2029}]+/u', ' ', $value);
-    $value = trim(preg_replace('/\p{Cc}+/u', '', $value));
+    $value = trim(preg_replace('/[\p{Cc}\x{202A}-\x{202E}\x{2066}-\x{2069}]+/u', '', $value));
     need(mb_strlen($value, 'UTF-8') <= $max);
     return $value;
+}
+
+// Who the rate limit counts as one sender: the hash of the IP address, or of
+// an IPv6 address's first 64 bits, since one connection holds that whole block
+// and could otherwise send from a new address every time.
+function sender(): string
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $bytes = @inet_pton($ip);
+    if ($bytes !== false && strlen($bytes) === 16) {
+        $ip = bin2hex(substr($bytes, 0, 8));
+    }
+    return hash('sha256', $ip);
 }
 
 // The timestamps still inside the window.

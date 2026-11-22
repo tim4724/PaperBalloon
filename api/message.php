@@ -14,7 +14,7 @@
 // for each.
 
 const MAX_MESSAGE = 5000; // characters
-const PER_SENDER = 5;     // messages per IP address per window
+const PER_SENDER = 5;     // messages per sender (sender() below) per window
 const PER_SERVER = 30;    // messages per window in total, against spam from many addresses
 const WINDOW = 3600;      // seconds
 const TO = 'info@paperballoon.games';
@@ -76,7 +76,7 @@ function handle(array &$all, array &$bySender, int $now): int
     if ($replyTo !== '' && (strlen($replyTo) > 254 || filter_var($replyTo, FILTER_VALIDATE_EMAIL) === false)) {
         return 400;
     }
-    $sender = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '');
+    $sender = sender();
     if (count($all) >= PER_SERVER || count($bySender[$sender] ?? []) >= PER_SENDER) {
         return 429;
     }
@@ -120,6 +120,19 @@ function field(string $name): string
 {
     $value = $_POST[$name] ?? '';
     return is_string($value) ? $value : '';
+}
+
+// Who the rate limit counts as one sender: the hash of the IP address, or of
+// an IPv6 address's first 64 bits, since one connection holds that whole block
+// and could otherwise send from a new address every time.
+function sender(): string
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $bytes = @inet_pton($ip);
+    if ($bytes !== false && strlen($bytes) === 16) {
+        $ip = bin2hex(substr($bytes, 0, 8));
+    }
+    return hash('sha256', $ip);
 }
 
 // The timestamps still inside the window.
