@@ -115,7 +115,9 @@ itself.
   hand from the Actions tab. It logs in with an SSH key (secret
   `HETZNER_SFTP_KEY`, public half under konsoleH › Logindaten › Öffentliche
   SFTP-Schlüssel) and checks the server against the pinned host key
-  (`HETZNER_SFTP_KNOWN_HOSTS`). Each site on the hosting has its own folder
+  (`HETZNER_SFTP_KNOWN_HOSTS`). The SFTP secrets belong to the `production`
+  environment, which only main and tags may use, and the job holding them runs
+  nothing from npm or the repo. Each site on the hosting has its own folder
   under `public_html`, this one `public_html/paperballoon.games` (konsoleH ›
   Serverkonfiguration › Startverzeichnis setzen, and the test subdomain's
   target). Apache applies every `.htaccess` above a site's folder too, so
