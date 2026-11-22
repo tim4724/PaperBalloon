@@ -35,11 +35,82 @@ jobs:
       - name: Build
         run: |
           set -euo pipefail
+          # Nothing else stands between a typo and production: a PHP file that
+          # doesn't parse takes its endpoint down, and the apps fetch the manifest.
+          for f in api/*.php; do php -l "$f"; done
+          for f in games-manifest.json .well-known/assetlinks.json .well-known/apple-app-site-association; do
+            jq empty "$f"
+          done
           rsync -a --exclude .git --exclude .github --exclude .gitignore \
             --exclude README.md --exclude tools ./ "$RUNNER_TEMP/site/"
           cd "$RUNNER_TEMP/site"
           npx --yes esbuild@0.28.2 assets/*.js --minify --target=es5 --outdir=assets --allow-overwrite --log-level=warning
           npx --yes esbuild@0.28.2 assets/*.css --minify --outdir=assets --allow-overwrite --log-level=warning
+
+      # The endpoints, run for real on PHP's own server before anything is
+      # uploaded. It knows no .htaccess, so they are reached as files, and
+      # they write into the runner's home. The feedback service's checks are
+      # what keep stray data out of what is stored, and its limits are the
+      # privacy policy's words, so both are held to here.
+      - name: Test the endpoints
+        run: |
+          set -uo pipefail
+          # Mail goes nowhere: a stand-in mailer takes the form's handover.
+          printf '#!/bin/sh\ncat >/dev/null\n' > "$RUNNER_TEMP/nomail"
+          chmod +x "$RUNNER_TEMP/nomail"
+          php -d sendmail_path="$RUNNER_TEMP/nomail" -S 127.0.0.1:8080 >/dev/null 2>&1 &
+          server=$!
+          for i in $(seq 25); do curl -s -o /dev/null http://127.0.0.1:8080/health.txt && break; sleep 0.2; done
+          api=http://127.0.0.1:8080/api
+          fail=0
+          expect() { # expected status, what it shows, then curl's arguments
+            got=$(curl -s -o /dev/null -w '%{http_code}' "${@:3}")
+            echo "$got $2"
+            [ "$got" = "$1" ] || { echo "  expected $1"; fail=1; }
+          }
+          send() { expect "$1" "$2" -X POST --data-binary "$3" "${@:4}" "$api/feedback.php"; }
+          good='{"v":1,"game":"tinytrack","build":"1.2.3","session":"abc123","fun":4,"answers":{"bots":"just-right"},"liked":"good\nfun","data":{"cup":{"id":"a"},"n":[1,2.5,true]}}'
+
+          send 204 "feedback is stored" "$good"
+          send 204 "a field the envelope lacks is dropped" '{"v":1,"game":"tinytrack","build":"1","fun":3,"ip":"203.0.113.9"}'
+          send 400 "an unknown game" '{"v":1,"game":"nope","build":"1","fun":3}'
+          send 400 "nothing a person said" '{"v":1,"game":"tinytrack","build":"1"}'
+          send 400 "a rating out of range" '{"v":1,"game":"tinytrack","build":"1","fun":6}'
+          send 400 "markup in data" '{"v":1,"game":"tinytrack","build":"1","fun":3,"data":{"x":"<b>"}}'
+          send 400 "not JSON" 'fun=3'
+          send 403 "another site's page" "$good" -H 'Host: paperballoon.games' -H 'Origin: https://example.com'
+          send 204 "the game's own page" "$good" -H 'Host: paperballoon.games' -H 'Origin: https://tinytrack.paperballoon.games'
+          send 204 "a preview's page, not stored" "$good" -H 'Host: paperballoon.games' -H 'Origin: https://tinytrack-main.paperballoon.games'
+          # Three are stored above (the preview's is not); 17 more make
+          # feedback.php's PER_SENDER.
+          for i in $(seq 17); do send 204 "up to the sender's limit" "$good" >/dev/null; done
+          send 429 "over the sender's limit" "$good"
+
+          stored=$(cat ~/feedback/tinytrack-*.jsonl)
+          want='{"day":"'$(date -u +%F)'","v":1,"game":"tinytrack","build":"1.2.3","session":"abc123","fun":4,"answers":{"bots":"just-right"},"liked":"good fun","data":{"cup":{"id":"a"},"n":[1,2.5,true]}}'
+          [ "$(echo "$stored" | head -1)" = "$want" ] || { echo "stored line differs: $(echo "$stored" | head -1)"; fail=1; }
+          [ "$(echo "$stored" | wc -l)" -eq 20 ] || { echo "stored $(echo "$stored" | wc -l) lines, not 20"; fail=1; }
+          if echo "$stored" | grep -q '203.0.113.9'; then echo "an unknown field was stored"; fail=1; fi
+
+          expect 503 "the desk without a password" "$api/feedback-data.php"
+          php -r 'echo password_hash("smoke", PASSWORD_DEFAULT), "\n";' > ~/feedback/admin.hash
+          expect 401 "the desk without a login" "$api/feedback-data.php"
+          expect 401 "a wrong password" -d 'password=wrong' "$api/feedback-data.php"
+          cookie=$(curl -s -o /dev/null -D - -d 'password=smoke' "$api/feedback-data.php" | sed -n 's/^Set-Cookie: \([^;]*\).*/\1/p' | tail -1)
+          count=$(curl -s -H "Cookie: $cookie" "$api/feedback-data.php" | php -r 'echo count(json_decode(stream_get_contents(STDIN)) ?? []);')
+          echo "$count records from the desk"
+          [ "$count" = 20 ] || fail=1
+
+          expect 400 "an empty message" -d 'message=' "$api/message.php"
+          expect 400 "a broken reply address" -d 'message=hi&email=nope' "$api/message.php"
+          expect 204 "a message" -d 'message=hi&email=someone@example.com' "$api/message.php"
+          expect 204 "the trap field, told it worked" -d 'message=hi&website=x' "$api/message.php"
+          # One counted above; 4 more make message.php's PER_SENDER.
+          for i in $(seq 4); do expect 204 "up to the sender's limit" -d 'message=hi' "$api/message.php" >/dev/null; done
+          expect 429 "over the sender's limit" -d 'message=hi' "$api/message.php"
+
+          kill $server
+          exit $fail
 
       - name: Install lftp
         run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
@@ -102,6 +173,8 @@ jobs:
           check 200 https://paperballoon.games/de/
           check 200 https://paperballoon.games/contact
           check 405 https://paperballoon.games/api/message
+          check 405 https://paperballoon.games/api/feedback
+          check 404 https://paperballoon.games/no-such-page
           check 200 https://paperballoon.games/.well-known/assetlinks.json
           check 200 https://test.paperballoon.games/health
           check 200 https://mta-sts.paperballoon.games/.well-known/mta-sts.txt
