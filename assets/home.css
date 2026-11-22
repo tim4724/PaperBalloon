@@ -170,9 +170,11 @@ body { background: linear-gradient(var(--bg), var(--bg)) var(--sky-high); }
 /* The poster whole and untouched; nothing sits on it. */
 .game__art { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #141318; }
 .game__body { display: flex; flex-direction: column; gap: 6px; padding: 20px 22px 22px; flex: 1; }
-/* Title row as in the app: name and tag on the left, player count top right. */
+/* Title row as in the app: name and tag on the left, player count top right.
+   Where the row is too narrow for both, the tag drops under the name, so the
+   name stays on one line. */
 .game__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.game__name { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.game__name { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
 .game h3 { font-size: 22px; }
 .game p { color: var(--on-surface-variant); font-size: 16px; }
 .game__players {
@@ -188,7 +190,8 @@ body { background: linear-gradient(var(--bg), var(--bg)) var(--sky-high); }
 /* Where a game runs: one ghost pill (.btn--ghost, smaller) per platform in
    the card's footer, each linking to the game there. The sunset stays on the
    hero's one button. Only platforms visitors can open today are listed. */
-.game__acts { display: flex; gap: 8px; padding: 0 22px 22px; }
+/* Side by side where both fit, else one a row (German on a small phone). */
+.game__acts { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 22px 22px; }
 .game__act { flex: 1; gap: 8px; min-height: 44px; padding: 0 14px; font-size: 15px; }
 
 /* Quiet tags, a tint and a word, never a saturated pill; a live game carries none. */
