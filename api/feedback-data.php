@@ -3,23 +3,22 @@
 // what feedback.php has stored, for the site owner alone. admin/feedback is
 // its only caller.
 //
-// The login is a PHP session, so the site needs no absolute server path as
-// Basic Auth's AuthUserFile would. The password's hash is one line in
-// feedback/admin.hash in the PHP user's home, made on the server with
+// The password comes with the request and nothing outlives it: no session, no
+// cookie. Its hash is one line in feedback/admin.hash in the PHP user's home,
+// made on the server with
 //   php -r 'echo password_hash("...", PASSWORD_DEFAULT), "\n";'
 // Until that file exists every request answers 503.
 //
-// POST password=...  204 and a session cookie, or 401; 429 after ten tries in
-//                    an hour from one sender (hashed, in
-//                    feedback/login-ratelimit.json, as feedback.php keeps its own)
-// POST logout=1      204, the session is gone
-// GET                every game's kept records as one JSON array; each names
-//                    its `game`, and the page tells them apart. 401 unless
-//                    logged in
+// POST password=...  200 and every game's kept records as one JSON array; each
+//                    names its `game`, and the page tells them apart. 401 for
+//                    a wrong password, 429 after ten wrong ones in an hour
+//                    from one sender (hashed, in feedback/login-ratelimit.json,
+//                    as feedback.php keeps its own), 409 while another
+//                    password is being checked and 500 when that file can't
+//                    be used
 // Nothing here may be cached: .htaccess sends no-store for this file.
 
-const TRIES = 10;            // logins per sender (sender() in lib.php) per window
-const SESSION = 12 * 3600;   // seconds a login lasts without a request
+const WRONG_TRIES = 10; // wrong passwords per sender (sender() in lib.php) per window
 
 require __DIR__ . '/lib.php';
 
@@ -29,42 +28,16 @@ if ($hash === '') {
     http_response_code(503);
     exit;
 }
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (($_POST['logout'] ?? '') === '1') {
-        if (resume($dir)) {
-            session_destroy();
-        }
-        http_response_code(204);
-        exit;
-    }
-    $password = $_POST['password'] ?? '';
-    if (!allowed($dir . '/login-ratelimit.json')) {
-        http_response_code(429);
-        exit;
-    }
-    if (!is_string($password) || !password_verify($password, $hash)) {
-        http_response_code(401);
-        exit;
-    }
-    session($dir);
-    // A fresh id, so one planted before the login is worth nothing.
-    session_regenerate_id(true);
-    $_SESSION['owner'] = true;
-    http_response_code(204);
-    exit;
-}
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    header('Allow: GET, POST');
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Allow: POST');
     http_response_code(405);
     exit;
 }
-if (!resume($dir)) {
-    http_response_code(401);
+$status = login($dir . '/login-ratelimit.json', $hash);
+if ($status !== 200) {
+    http_response_code($status);
     exit;
 }
-// Lets the page's other requests through while this one streams.
-session_write_close();
 
 // The stored lines are JSON already, so they go out as they are, joined into
 // an array: the whole set is never held in memory.
@@ -93,57 +66,19 @@ foreach (glob($dir . '/*.jsonl') ?: [] as $path) {
 }
 echo ']';
 
-function session(string $dir): void
-{
-    // Sessions are kept beside the data, not in a temp folder other accounts
-    // on a shared host might read or write.
-    if (!is_dir($dir . '/sessions')) {
-        mkdir($dir . '/sessions', 0700);
-    }
-    session_save_path($dir . '/sessions');
-    ini_set('session.use_strict_mode', '1');
-    // How long a login lasts and when its file goes are set here, not left to
-    // the host's php.ini: a session unused for SESSION seconds is removed by
-    // one in twenty of the requests that start one.
-    ini_set('session.gc_maxlifetime', (string) SESSION);
-    ini_set('session.gc_probability', '1');
-    ini_set('session.gc_divisor', '20');
-    // PHP's own cache headers would double the one .htaccess sends.
-    session_cache_limiter('');
-    session_set_cookie_params([
-        'path' => '/api/feedback-data',
-        // Plain HTTP only ever in a local preview.
-        'secure' => ($_SERVER['HTTPS'] ?? 'off') !== 'off' || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https',
-        'httponly' => true,
-        'samesite' => 'Strict',
-    ]);
-    session_start();
-}
-
-// Picks up the owner's session, if the request's cookie names one. Without a
-// cookie there is none to pick up, and starting one would leave a file per
-// stray request; so would a cookie that names no login, which strict mode
-// answers with a fresh, empty session, so that one is removed again.
-function resume(string $dir): bool
-{
-    if (!isset($_COOKIE[session_name()])) {
-        return false;
-    }
-    session($dir);
-    if (empty($_SESSION['owner'])) {
-        session_destroy();
-        return false;
-    }
-    return true;
-}
-
-// Counts this login try against the sender's ten per hour; false once over.
-function allowed(string $path): bool
+// 200 for the right password, 401 for a wrong one, 429 once the sender is over
+// the limit, 409 while another is checked. The lock is held while the password
+// is checked, so tries sent all at once can't outrun the count.
+function login(string $path, string $hash): int
 {
     $file = @fopen($path, 'c+');
-    if (!$file || !flock($file, LOCK_EX)) {
+    if (!$file) {
         error_log('feedback-data: rate-limit file unusable');
-        return false;
+        return 500;
+    }
+    // Refused, not queued: waiting requests would tie up the server's PHP processes.
+    if (!flock($file, LOCK_EX | LOCK_NB)) {
+        return 409;
     }
     $now = time();
     $by = [];
@@ -153,13 +88,18 @@ function allowed(string $path): bool
         }
     }
     $sender = sender();
-    $ok = count($by[$sender] ?? []) < TRIES;
-    if ($ok) {
+    $password = $_POST['password'] ?? '';
+    if (count($by[$sender] ?? []) >= WRONG_TRIES) {
+        $status = 429;
+    } elseif (is_string($password) && password_verify($password, $hash)) {
+        $status = 200;
+    } else {
         $by[$sender][] = $now;
+        $status = 401;
     }
     ftruncate($file, 0);
     rewind($file);
     fwrite($file, json_encode($by));
     fclose($file);
-    return $ok;
+    return $status;
 }

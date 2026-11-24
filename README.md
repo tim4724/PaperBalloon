@@ -89,8 +89,9 @@ itself.
   the envelope `record()` checks. What a game puts into `data` belongs in the
   privacy policy
 - `admin/feedback/`, `api/feedback-data.php` — the owner's charts over that
-  feedback, behind a password. One-time setup on the server: the password's
-  hash goes into `feedback/admin.hash` (the PHP file's header has the command).
+  feedback, behind a password that every load of the page asks for. One-time
+  setup on the server: the password's hash goes into `feedback/admin.hash` (the
+  PHP file's header has the command).
   `noindex`, not in the sitemap. What only one game can chart is a view,
   `assets/feedback-desk-<game>.js` plus its markup in the page; the header of
   `feedback-desk.js` says what a view is made of
@@ -156,6 +157,9 @@ docker run -d --name pb-site --network pb -p 8000:80 \
   sed -i "s/AllowOverride None/AllowOverride All/" /etc/apache2/apache2.conf &&
   exec apache2-foreground'
 ```
+
+`tools/test-endpoints.sh` checks the PHP endpoints on that same image; CI runs it
+on every push to main, every pull request and before a deploy.
 
 `python3 -m http.server 8000` is enough for the landing page alone; it knows
 none of the `.htaccess` routes, so `/privacy` 404s there.

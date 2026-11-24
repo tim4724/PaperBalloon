@@ -1,0 +1,18 @@
+name: Test
+
+# Every push to main and every pull request; deploy.yml runs the same script
+# before an upload.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  endpoints:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: tools/test-endpoints.sh

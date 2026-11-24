@@ -1,5 +1,5 @@
 // The feedback desk (/admin/feedback): reads what players sent from
-// /api/feedback-data (api/feedback-data.php, which also holds the login). The
+// /api/feedback-data (api/feedback-data.php, which also checks the password). The
 // records are what api/feedback.php stores; its record() is the statement of
 // their envelope, and `data` in them is each game's own.
 //
@@ -46,42 +46,23 @@
     $('status').textContent = text;
     $('status').hidden = !text;
   }
-  function signedIn(yes) {
-    $('signout').hidden = !yes;
-    $('login').hidden = yes;
-    if (!yes) { $('main').hidden = true; $('short-count').textContent = ''; }
-  }
 
-  function load() {
-    say('Loading the feedback.');
-    fetch('/api/feedback-data').then(function (res) {
-      if (res.status === 401) { signedIn(false); say(''); $('password').focus(); return; }
-      if (res.status === 503) { say('No password has been set up on the server yet. The top of api/feedback-data.php says how.'); return; }
-      if (!res.ok) { say('The feedback could not be loaded (error ' + res.status + ').'); return; }
-      signedIn(true);
-      return res.json().then(show, function () { say('The stored feedback could not be read.'); });
-    }, function () { say('The feedback could not be loaded. Is the server reachable?'); });
-  }
-
+  // The password goes with the request and is not kept: a reload asks again.
   $('login').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var body = new URLSearchParams();
     body.append('password', $('password').value);
+    say('Loading the feedback.');
     fetch('/api/feedback-data', { method: 'POST', body: body }).then(function (res) {
+      if (res.status === 409) { say('Another sign-in is being checked. Try again.'); return; }
       $('password').value = '';
-      if (res.ok) { $('login').hidden = true; load(); }
-      else say(res.status === 401 ? 'Wrong password.' : res.status === 429 ? 'Too many tries. Wait an hour.' : 'Signing in failed (error ' + res.status + ').');
-    }, function () { say('Signing in failed. Is the server reachable?'); });
-  });
-
-  $('signout').addEventListener('click', function () {
-    var body = new URLSearchParams();
-    body.append('logout', '1');
-    fetch('/api/feedback-data', { method: 'POST', body: body }).then(function () {
-      records = [];
-      signedIn(false);
-      say('Signed out.');
-    });
+      if (res.status === 401) { say('Wrong password.'); $('password').focus(); return; }
+      if (res.status === 429) { say('Too many tries. Wait an hour.'); return; }
+      if (res.status === 503) { say('No password has been set up on the server yet. The top of api/feedback-data.php says how.'); return; }
+      if (!res.ok) { say('The feedback could not be loaded (error ' + res.status + ').'); return; }
+      $('login').hidden = true;
+      return res.json().then(show, function () { say('The stored feedback could not be read.'); });
+    }, function () { say('The feedback could not be loaded. Is the server reachable?'); });
   });
 
   function show(data) {
@@ -346,5 +327,8 @@
   window.addEventListener('scroll', function () { tip.hidden = true; }, { passive: true });
 
   // Once the views, loaded after this file, have registered.
-  document.addEventListener('DOMContentLoaded', load);
+  document.addEventListener('DOMContentLoaded', function () {
+    $('login').hidden = false;
+    $('password').focus();
+  });
 })();

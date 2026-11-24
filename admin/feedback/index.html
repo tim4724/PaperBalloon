@@ -24,7 +24,6 @@
       <h1>Feedback Desk</h1>
       <p class="lede" id="short-count"></p>
     </div>
-    <button type="button" class="signout" id="signout" hidden>Sign out</button>
     <!-- theme.js runs it, as on the site's pages. -->
     <button class="theme-toggle" type="button" aria-label="Dark mode">
       <svg class="theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"/></svg>
@@ -32,7 +31,7 @@
     </button>
   </header>
 
-  <p class="status" id="status" role="status">Loading the feedback.</p>
+  <p class="status" id="status" role="status" hidden></p>
   <form class="login" id="login" method="post" action="/api/feedback-data" hidden>
     <label for="password">Password</label>
     <input id="password" name="password" type="password" autocomplete="current-password" required>
