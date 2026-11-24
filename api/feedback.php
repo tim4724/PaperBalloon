@@ -226,6 +226,8 @@ function data($value, int $depth, int &$left)
     foreach ($value as $key => $item) {
         $key = (string) $key;
         need(preg_match('/^[A-Za-z][A-Za-z0-9_]{0,23}$/D', $key));
+        // The desk's script would call it for the object's toString() and fail.
+        need($key !== 'toString');
         $copy->$key = data($item, $depth + 1, $left);
     }
     return $copy;
