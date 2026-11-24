@@ -7,14 +7,14 @@ const WINDOW = 3600;     // seconds a rate limit looks back
 const KEEP_MONTHS = 24;  // monthly feedback files kept, this month included: the privacy policy's promise
 
 // Who a rate limit counts as one sender: the hash of the IP address, or of an
-// IPv6 address's first 64 bits, since one connection holds that whole block
-// and could otherwise send from a new address every time.
+// IPv6 address's first 56 bits, since one home connection often holds that
+// whole block and could otherwise send from a new address every time.
 function sender(): string
 {
     $ip = $_SERVER['REMOTE_ADDR'] ?? '';
     $bytes = @inet_pton($ip);
     if ($bytes !== false && strlen($bytes) === 16) {
-        $ip = bin2hex(substr($bytes, 0, 8));
+        $ip = bin2hex(substr($bytes, 0, 7));
     }
     return hash('sha256', $ip);
 }
