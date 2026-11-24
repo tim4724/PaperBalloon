@@ -73,10 +73,11 @@ function handle(array &$all, array &$bySender, int $now): int
     if ($text === '' || !mb_check_encoding($text, 'UTF-8') || mb_strlen($text, 'UTF-8') > MAX_MESSAGE) {
         return 400;
     }
-    // Optional, and a bare address when given. The filter rejects line breaks,
-    // so it can't smuggle in extra headers.
+    // Optional, and a bare address when given. No control characters: the
+    // filter takes an escaped line break inside quotes, which mail() throws on.
     $replyTo = trim(field('email'));
-    if ($replyTo !== '' && (strlen($replyTo) > 254 || filter_var($replyTo, FILTER_VALIDATE_EMAIL) === false)) {
+    if ($replyTo !== '' && (strlen($replyTo) > 254 || preg_match('/[[:cntrl:]]/', $replyTo)
+        || filter_var($replyTo, FILTER_VALIDATE_EMAIL) === false)) {
         return 400;
     }
     $sender = sender();
