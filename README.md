@@ -95,6 +95,9 @@ itself.
   `noindex`, not in the sitemap. What only one game can chart is a view,
   `assets/feedback-desk-<game>.js` plus its markup in the page; the header of
   `feedback-desk.js` says what a view is made of
+- `api/lib.php` — what the endpoints share. It sends PHP's errors to
+  `php_logs/` in the SFTP login folder, one file per day, kept 7 days (the
+  privacy policy's limit for error logs)
 - `privacy.html`, `imprint.html` — legal pages (German, umbrella policy for all
   Paper Balloon infra); English versions in `en/`
 - `assets/artwork/` — each poster ships at 1920px plus -720, -960 and -1280

@@ -168,5 +168,16 @@ is "the rate limit keeps hashes and times only" "$(in_box cat /var/www/contact-r
 hour_passes /var/www/contact-ratelimit.json
 message 204 "an hour later" -d 'message=hi'
 
-is "PHP's own complaints" "$(docker logs "$c" 2>&1 | grep -E 'PHP (Parse|Fatal|Warning|Notice|Deprecated)')" ""
+echo "# Error log"
+# Days 7 and 6 before today: past the kept days, and the oldest of them.
+past=/var/www/php_logs/$(in_box date -u -d '-7 day' +%F).log
+oldest=/var/www/php_logs/$(in_box date -u -d '-6 day' +%F).log
+in_box sh -c "echo old | tee $past > $oldest"
+message 204 "a message" -d 'message=hi'
+is "drops a day past 7" "$(in_box sh -c "ls $past 2>/dev/null")" ""
+is "keeps the 7th" "$(in_box ls "$oldest")" "$oldest"
+
+# Errors before lib.php runs, such as a parse error, are in the container's own
+# log rather than in php_logs/.
+is "PHP's own complaints" "$({ docker logs "$c" 2>&1; in_box sh -c 'cat /var/www/php_logs/*.log'; } | grep -E 'PHP (Parse|Fatal|Warning|Notice|Deprecated)')" ""
 exit $fail
