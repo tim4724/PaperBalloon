@@ -125,7 +125,8 @@ jobs:
       # From GitHub's network, never from home: Hetzner blocks web access from
       # an address that sends many requests in a short time, so few and slow.
       # The home page has to be this build's, which also catches an upload
-      # that went to a folder the domain doesn't serve.
+      # that went to a folder the domain doesn't serve, and so does the
+      # MTA-STS policy, byte for byte with its CRLF line ends.
       - name: Check the live site
         run: |
           set -uo pipefail
@@ -144,11 +145,15 @@ jobs:
           check 404 https://paperballoon.games/no-such-page
           check 200 https://paperballoon.games/.well-known/assetlinks.json
           check 200 https://test.paperballoon.games/health
-          check 200 https://mta-sts.paperballoon.games/.well-known/mta-sts.txt
-          if curl -s --max-time 15 https://paperballoon.games/ | cmp -s - "$RUNNER_TEMP/site/index.html"; then
-            echo "home page is this build"
-          else
-            echo "home page is not this build"
-            fail=1
-          fi
+          same() { # URL, file of this build
+            if curl -sf --max-time 15 "$1" | cmp -s - "$RUNNER_TEMP/site/$2"; then
+              echo "this build: $1"
+            else
+              echo "not this build: $1"
+              fail=1
+            fi
+            sleep 2
+          }
+          same https://paperballoon.games/ index.html
+          same https://mta-sts.paperballoon.games/.well-known/mta-sts.txt .well-known/mta-sts.txt
           exit $fail

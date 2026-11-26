@@ -108,7 +108,9 @@ itself.
 - `.htaccess` — the server config on Hetzner Webhosting (Apache + PHP).
   `test.paperballoon.games` and `mta-sts.paperballoon.games` are konsoleH
   subdomains onto the same folder
-- `.well-known/mta-sts.txt` — the MTA-STS policy (RFC 8461). Enforcing senders
+- `.well-known/mta-sts.txt` — the MTA-STS policy (RFC 8461), in enforce mode.
+  Its lines end in CRLF, as the RFC's text says and Google and Microsoft serve
+  theirs; keep them when editing. Enforcing senders
   cache it for `max_age`, so it must be right *before* the MX changes: before
   mail ever moves off Hetzner, add the new MX host to `mx:` (or set
   `mode: none`), wait `max_age`, then switch the MX. Every change to the file
