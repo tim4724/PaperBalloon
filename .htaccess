@@ -37,6 +37,10 @@ RewriteCond %{THE_REQUEST} \s/([^?\s]+)\.html[\s?]
 RewriteRule ^ /%1 [R=301,L]
 # English is the root; /de/ makes /en/ an easy guess, and it has no index.
 RewriteRule ^en/?$ / [R=301,L]
+# The closed test's sign-up page is gone; its shared links land on the game
+# cards, which link the open tests. 302, since browsers keep a 301 for good
+# and this target may change. NE keeps the # from being escaped.
+RewriteRule ^(de/)?beta/?$ /$1#games [R=302,NE,L]
 
 # The contact form's endpoint.
 RewriteRule ^api/message$ api/message.php [END]

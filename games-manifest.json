@@ -8,10 +8,11 @@
       "maxPlayers": 8,
       "tvApps": {
         "appletv": "live",
-        "androidtv": "soon"
+        "androidtv": "live"
       },
       "tvStores": {
-        "appletv": "https://apps.apple.com/app/hexstacker-party/id6788876779"
+        "appletv": "https://apps.apple.com/app/hexstacker-party/id6788876779",
+        "androidtv": "https://play.google.com/store/apps/details?id=com.couchgames.stacker"
       },
       "art": "/assets/artwork/hexstacker-16x9-v2.webp",
       "icon": "/assets/artwork/hexstacker-icon-v2.png",
@@ -29,6 +30,12 @@
       "status": "beta",
       "minPlayers": 1,
       "maxPlayers": 4,
+      "tvApps": {
+        "androidtv": "live"
+      },
+      "tvStores": {
+        "androidtv": "https://play.google.com/store/apps/details?id=games.paperballoon.tinytrack"
+      },
       "art": "/assets/artwork/tinytrack-16x9-v4.webp",
       "icon": "/assets/artwork/tinytrack-icon-v4.png",
       "video": "https://tinytrack.paperballoon.games/assets/trailer/trailer-v2.mp4",

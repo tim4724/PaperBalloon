@@ -13,13 +13,12 @@ Flagship game: **HexStacker Party** — live at
 **Powder Party** (skiing) is still in development.
 
 The phone controller app is on the App Store and Google Play; each game offers
-it on its own join page, this site does not. The Android TV builds are in
-closed testing, gated on the
-[testers Google Group](https://groups.google.com/g/paperballoongames) — a Play
-listing 404s for anyone who isn't a member yet. The landing page deliberately
-says nothing about that: it links only what a visitor can actually open. Testers
-are recruited by link instead, through `/beta` (`/de/beta`); delete those pages
-and `assets/beta.css` once the TV apps are in production.
+it on its own join page, this site does not. The landing page links only what
+a visitor can actually open: a TV app gets a button on its game card once its
+store listing is open to anyone, in production or an open test (Play open
+testing, a TestFlight public link). A closed test doesn't count: its Play
+listing 404s for anyone outside the
+[testers Google Group](https://groups.google.com/g/paperballoongames).
 
 ## Design
 
@@ -34,11 +33,11 @@ One face (Outfit) everywhere. `assets/site.css` holds what the pages share: a
 bar-less header (the wordmark alone; the balloon mark is the favicon and
 launcher icon), pill buttons, the footer and the sky parts the pages open with.
 The home hero shows the flagship poster on a drawn TV under the dusk, with the
-fleet's balloons in it; the beta and contact pages are that opening in a
-lighter dose. Posters are shown whole, never cropped, and nothing sits on them.
-The sunset gradient fills only a page's one primary button; nothing has a
-shadow or glow, except light from art: the poster-tinted light under the mouse
-on the home game cards.
+fleet's balloons in it; the contact page is that opening in a lighter dose.
+Posters are shown whole, never cropped, and nothing sits on them. The sunset
+gradient fills only a page's one primary button; nothing has a shadow or glow,
+except light from art: the poster-tinted light under the mouse on the home game
+cards.
 
 Motion follows the rules at the top of home.css's "Motion" section (what may
 animate, so weak phones and reduced motion stay fine); the theme switch's
@@ -58,10 +57,11 @@ itself.
   `/404` and `/de/404` also answer as ordinary pages, which is what their
   language links point at
 - `games-manifest.json` — fetched by the controller apps. Keep in sync with the
-  controller repo's bundled copy. `art` is the 16:9 cover, `icon` the square
-  brand mark (nearby-room / rejoin cards in the launcher). The apps match their
-  bundled copy by **filename**, and cache anything they didn't ship by URL
-  without revalidating — so re-rendered artwork ships under a new name
+  controller repo's bundled copy, and `tvStores` with the home cards' TV
+  buttons, which link the same store pages. `art` is the 16:9 cover, `icon`
+  the square brand mark (nearby-room / rejoin cards in the launcher). The apps
+  match their bundled copy by **filename**, and cache anything they didn't
+  ship by URL without revalidating — so re-rendered artwork ships under a new name
   (`…-v2.webp`) here, in both app bundles and in the home page's hero `srcset`;
   never as a `?v=` bump, which the filename match would swallow.
   `video` is a trailer on the game's own server; the apps cache it by
@@ -79,8 +79,6 @@ itself.
   repo's contract UI tests (`ContractTest.kt`, `ContractTests.swift`) drive the
   deployed page by its element ids and button labels, so renaming one breaks
   their CI. See "Reaching the test controller from the app" below
-- `beta.html`, `de/beta.html` — closed-test sign-up steps, shared by link.
-  `noindex`, not in the sitemap
 - `contact.html`, `de/contact.html`, `api/message.php` — the contact form and
   its mailer. The privacy policy states exactly what the mailer stores; change
   the two together

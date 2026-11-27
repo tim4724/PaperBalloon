@@ -1,4 +1,4 @@
-/* Shared look of the web pages (home, beta, contact, 404): base type,
+/* Shared look of the web pages (home, contact, 404): base type,
    header, buttons, footer and the band pages' opening. Tokens (--bg,
    --card, …) come from theme.css, linked first; each page adds its
    own stylesheet after this one. The legal
@@ -162,7 +162,7 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 .footer--slim .footer__row { align-items: center; gap: 12px 32px; }
 .footer--slim .footer__links { padding-top: 0; }
 
-/* ---- Sky parts, shared by the pages that open under the dusk (home, beta,
+/* ---- Sky parts, shared by the pages that open under the dusk (home,
    contact; 404 takes only the bare band):
    a .sky band with no header hairline, stars at night, flat white clouds by
    day, and the fleet's balloons. A page carries the symbols (the launcher
@@ -194,8 +194,8 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 @keyframes slide { from { transform: translateX(-24px); } to { transform: translateX(24px); } }
 
 
-/* ---- Band pages (beta, contact): a short page under a dusk sky, lilac to
-   peach behind the title and the content's first cards, fading into the
+/* ---- Band pages (contact): a short page under a dusk sky, lilac to
+   peach behind the title and the top of the content, fading into the
    paper by the bottom of the first screen, with two balloons and a cloud: the
    home page's opening in a lighter dose. The sky is the page's, not the
    band's: squeezed into the band alone, it read as a stripe. The flex column

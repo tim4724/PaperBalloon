@@ -190,9 +190,11 @@ body { background: linear-gradient(var(--bg), var(--bg)) var(--sky-high); }
 /* Where a game runs: one ghost pill (.btn--ghost, smaller) per platform in
    the card's footer, each linking to the game there. The sunset stays on the
    hero's one button. Only platforms visitors can open today are listed. */
-/* Side by side where both fit, else one a row (German on a small phone). */
+/* Side by side where they fit, else one a row (German on a small phone). */
 .game__acts { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 22px 22px; }
 .game__act { flex: 1; gap: 8px; min-height: 44px; padding: 0 14px; font-size: 15px; }
+/* Three: the browser on a row of its own, the two TV apps paired below it. */
+.game__act:first-child:nth-last-child(3) { flex-basis: 100%; }
 
 /* Quiet tags, a tint and a word, never a saturated pill; a live game carries none. */
 .tag {

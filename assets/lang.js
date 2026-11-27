@@ -1,6 +1,6 @@
 // Language preference + German-suggestion banner for the Paper Balloon site.
 // Shared by the pages that come in both languages: the landing (index.html
-// carries #langbar; /de/ does not), contact, beta and the legal pages
+// carries #langbar; /de/ does not), contact and the legal pages
 // (/privacy, /imprint and their /en/ counterparts). The blocks below each
 // no-op on pages missing the elements they target, so one file covers all of
 // them.
